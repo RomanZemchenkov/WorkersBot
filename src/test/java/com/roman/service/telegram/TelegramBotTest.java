@@ -287,6 +287,28 @@ public class TelegramBotTest extends DockerInitializer {
         Mockito.verify(messageSender, Mockito.times(1)).sendResponse(Mockito.any(SendMessage.class));
     }
 
+    @Test
+    @DisplayName("Testing the registration with already existed worker")
+    @Transactional
+    void registrationWithExistedWorker(){
+        entityManager.createNativeQuery("INSERT INTO worker(id) VALUES(1)").executeUpdate();
+        entityManager.createNativeQuery("INSERT INTO post(id, title) VALUES(10,'director')").executeUpdate();
+        entityManager.createNativeQuery("INSERT INTO company(id, name) VALUES(1,'Работяги')").executeUpdate();
+        entityManager.createNativeQuery("INSERT INTO personal_info(worker_id, firstname, lastname, patronymic, username, birthday, company_id, post_id)" +
+                                        " VALUES(1,'Roman','Zemchenkov','Test','Roman_Zemchenkov','2000-02-02',1,10)").executeUpdate();
+
+        Message registratioMessage = messageFactory("/registration");
+        Mockito.doNothing().when(messageSender).sendResponse(Mockito.any(SendMessage.class));
+
+        telegramBot.checkQueryFromUser(registratioMessage);
+
+        Mockito.verify(registrationActions,Mockito.times(1)).afterRegistrationAction();
+        Mockito.verify(registrationActions, Mockito.times(1)).workerAlreadyRegisteredExceptionHandler();
+        Mockito.verify(telegramCommand, Mockito.times(1)).registration(registratioMessage);
+        Mockito.verify(messageSender, Mockito.times(1))
+                .sendResponse(Mockito.any(SendMessage.class));
+    }
+
     static Message messageFactory(String requestText) {
         User roman = new User(1L, "Roman", false);
         roman.setLastName("Zemchenkov");

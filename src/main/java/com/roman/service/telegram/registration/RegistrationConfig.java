@@ -46,7 +46,7 @@ public class RegistrationConfig extends EnumStateMachineConfigurerAdapter<Regist
                     .source(WAITING)
                     .target(WAITING_POST)
                     .event(RegistrationEvent.START_REGISTRATION)
-                    .action(registrationActions.afterRegistrationAction()) //просим ввести должность
+                    .action(registrationActions.afterRegistrationAction(), registrationActions.workerAlreadyRegisteredExceptionHandler()) //просим ввести должность
                     .and()
                 .withExternal()
                     .source(WAITING_POST)

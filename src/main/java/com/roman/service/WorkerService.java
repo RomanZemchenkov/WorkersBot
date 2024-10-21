@@ -3,6 +3,7 @@ package com.roman.service;
 import com.roman.dao.entity.Worker;
 import com.roman.dao.repository.WorkerRepository;
 import com.roman.service.dto.telegram.RegistrationWorkerDto;
+import com.roman.service.exception.WorkerAlreadyRegisteredException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -18,8 +19,12 @@ public class WorkerService {
 
     @Transactional(propagation = Propagation.REQUIRED)
     public void createWorker(RegistrationWorkerDto workerDto){
-        String workerId = workerDto.getWorkerId();
-        Worker worker = new Worker(Long.parseLong(workerId));
+        Long workerId = Long.parseLong(workerDto.getWorkerId());
+        Optional<Worker> mayBeWorker = workerRepository.findById(workerId);
+        if(mayBeWorker.isPresent()){
+            throw new WorkerAlreadyRegisteredException();
+        }
+        Worker worker = new Worker(workerId);
         workerRepository.save(worker);
     }
 

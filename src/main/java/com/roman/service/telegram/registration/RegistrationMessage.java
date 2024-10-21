@@ -22,4 +22,7 @@ public class RegistrationMessage {
                                                             "Введите дату в формате yyyy-mm-dd.\n" +
                                                             "Пример: 1970-01-01.";
     public static final String USERNAME_DOESNT_EXIST_EXCEPTION_MESSAGE = "Пользователя с username '%s' не существует.";
+    public static final String WORKER_ALREADY_REGISTERED_EXCEPTION_MESSAGE = "Вы уже зарегистрированы.\n" +
+                                                                             "Если вы хотите обновить информацию о себе введите \\update\n" +
+                                                                             "Если вы хотите получить полный список возможных команд введите \\help.";
 }

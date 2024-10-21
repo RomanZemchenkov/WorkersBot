@@ -23,6 +23,7 @@ import static com.roman.service.telegram.registration.RegistrationMessage.BIRTHD
 import static com.roman.service.telegram.registration.RegistrationMessage.REGISTRATION_MESSAGE_KEY;
 import static com.roman.service.telegram.registration.RegistrationMessage.START_REGISTRATION_MESSAGE;
 import static com.roman.service.telegram.registration.RegistrationMessage.USERNAME_DOESNT_EXIST_EXCEPTION_MESSAGE;
+import static com.roman.service.telegram.registration.RegistrationMessage.WORKER_ALREADY_REGISTERED_EXCEPTION_MESSAGE;
 
 @Component
 public class RegistrationActions {
@@ -154,6 +155,14 @@ public class RegistrationActions {
             Message message = (Message) context.getMessageHeader(REGISTRATION_MESSAGE_KEY);
             String chatId = String.valueOf(message.getChatId());
             sender.sendResponse(new SendMessage(chatId,BIRTHDAY_EXCEPTION_MESSAGE));
+        };
+    }
+
+    public Action<RegistrationState,RegistrationEvent> workerAlreadyRegisteredExceptionHandler(){
+        return context -> {
+            Message message = (Message) context.getMessageHeader(REGISTRATION_MESSAGE_KEY);
+            String chatId = String.valueOf(message.getChatId());
+            sender.sendResponse(new SendMessage(chatId,WORKER_ALREADY_REGISTERED_EXCEPTION_MESSAGE));
         };
     }
 
