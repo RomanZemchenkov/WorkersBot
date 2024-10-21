@@ -9,6 +9,8 @@ import com.roman.dao.repository.PersonalInfoRepository;
 import com.roman.dao.repository.PostRepository;
 import com.roman.dao.repository.WorkerRepository;
 import com.roman.service.dto.telegram.RegistrationWorkerDto;
+import com.roman.service.exception.BirthdayFormatException;
+import com.roman.service.exception.UsernameDoesntExistException;
 import com.roman.service.mapper.PersonalInfoMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Optional;
 
 @Service
@@ -29,6 +32,7 @@ public class PersonalInfoService {
     private final PostRepository postRepository;
     private final CompanyRepository companyRepository;
     private final WorkerRepository workerRepository;
+    private static final String BIRTHDAY_PATTERN = "yyyy.MM.dd";
 
     @Transactional(propagation = Propagation.REQUIRED)
     public void createPersonalInfo(RegistrationWorkerDto dto) {
@@ -42,7 +46,7 @@ public class PersonalInfoService {
     public PersonalInfo findPersonalInfoWithCompany(String workerUsername) {
         Optional<PersonalInfo> mayBeInfo = personalInfoRepository.findPersonalInfoWithCompanyByUsername(workerUsername);
         if (mayBeInfo.isEmpty()) {
-            throw new RuntimeException("Потом сделаю");
+            throw new UsernameDoesntExistException(workerUsername);
         }
         return mayBeInfo.get();
     }
@@ -74,7 +78,11 @@ public class PersonalInfoService {
 
     public void updatePersonalInfoBirthday(Long workerId, String birthday) {
         PersonalInfo personalInfo = personalInfoRepository.findById(workerId).get();
-        personalInfo.setBirthday(LocalDate.parse(birthday, DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+        try {
+            personalInfo.setBirthday(LocalDate.parse(birthday, DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+        } catch (DateTimeParseException e){
+            throw new BirthdayFormatException();
+        }
 
         personalInfoRepository.save(personalInfo);
 

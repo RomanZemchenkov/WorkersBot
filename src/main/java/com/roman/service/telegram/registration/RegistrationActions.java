@@ -19,12 +19,10 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.User;
 
-import static com.roman.service.telegram.registration.RegistrationMessage.POST_WRITE_MESSAGE;
+import static com.roman.service.telegram.registration.RegistrationMessage.BIRTHDAY_EXCEPTION_MESSAGE;
 import static com.roman.service.telegram.registration.RegistrationMessage.REGISTRATION_MESSAGE_KEY;
 import static com.roman.service.telegram.registration.RegistrationMessage.START_REGISTRATION_MESSAGE;
-import static com.roman.service.telegram.registration.RegistrationMessage.SUCCESSFUL_REGISTRATION_MESSAGE;
-import static com.roman.service.telegram.registration.RegistrationMessage.WRITE_BIRTHDAY_MESSAGE;
-import static com.roman.service.telegram.registration.RegistrationMessage.WRITE_DIRECTOR_USERNAME_MESSAGE;
+import static com.roman.service.telegram.registration.RegistrationMessage.USERNAME_DOESNT_EXIST_EXCEPTION_MESSAGE;
 
 @Component
 public class RegistrationActions {
@@ -136,6 +134,26 @@ public class RegistrationActions {
 
             SendMessage sendMessage = new SendMessage(chatId, messageResponse);
             sender.sendResponse(sendMessage);
+        };
+    }
+
+
+    //second tier actions - exception actions
+    public Action<RegistrationState,RegistrationEvent> directorUsernameExceptionHandlerAction(){
+        return context -> {
+            Message message = (Message) context.getMessageHeader(REGISTRATION_MESSAGE_KEY);
+            String wrongUsername = message.getText();
+            String chatId = String.valueOf(message.getChatId());
+
+            sender.sendResponse(new SendMessage(chatId,USERNAME_DOESNT_EXIST_EXCEPTION_MESSAGE.formatted(wrongUsername)));
+        };
+    }
+
+    public Action<RegistrationState,RegistrationEvent> birthdayFormatExceptionHandleAction(){
+        return context -> {
+            Message message = (Message) context.getMessageHeader(REGISTRATION_MESSAGE_KEY);
+            String chatId = String.valueOf(message.getChatId());
+            sender.sendResponse(new SendMessage(chatId,BIRTHDAY_EXCEPTION_MESSAGE));
         };
     }
 

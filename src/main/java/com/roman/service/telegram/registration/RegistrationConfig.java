@@ -70,7 +70,7 @@ public class RegistrationConfig extends EnumStateMachineConfigurerAdapter<Regist
                         .source(WAITING_DIRECTOR_USERNAME)
                         .target(WAITING_ANOTHER_POST)
                         .event(RegistrationEvent.ENTER_DIRECTOR_USERNAME)
-                        .action(registrationActions.afterEnterDirectorUsername(POST_WRITE_MESSAGE)) //просим ввести должность
+                        .action(registrationActions.afterEnterDirectorUsername(POST_WRITE_MESSAGE), registrationActions.directorUsernameExceptionHandlerAction()) //просим ввести должность
                         .and()
                             .withExternal()
                             .source(WAITING_ANOTHER_POST)
@@ -82,7 +82,8 @@ public class RegistrationConfig extends EnumStateMachineConfigurerAdapter<Regist
                     .source(WAITING_BIRTHDAY)
                     .target(REGISTRATION_COMPLETE)
                     .event(RegistrationEvent.ENTER_BIRTHDAY)
-                    .action(registrationActions.enterBirthdayAction(SUCCESSFUL_REGISTRATION_MESSAGE));
+                    .action(registrationActions.enterBirthdayAction(SUCCESSFUL_REGISTRATION_MESSAGE),
+                            registrationActions.birthdayFormatExceptionHandleAction());
 
     }
 
