@@ -29,7 +29,7 @@ public class PersonalInfoService {
 
     private final PersonalInfoMapper mapper;
     private final PersonalInfoRepository personalInfoRepository;
-    private final PostRepository postRepository;
+    private final PostService postService;
     private final CompanyRepository companyRepository;
     private final WorkerRepository workerRepository;
     private static final String BIRTHDAY_PATTERN = "yyyy.MM.dd";
@@ -62,7 +62,7 @@ public class PersonalInfoService {
 
     public void updatePersonalInfoPost(Long workerId, String post) {
         PersonalInfo personalInfo = personalInfoRepository.findById(workerId).get();
-        Post existPost = postRepository.findPostByTitle(post).orElseGet(() -> postRepository.save(new Post(post)));
+        Post existPost = postService.findPostOrCreate(post);
         personalInfo.setPost(existPost);
 
         personalInfoRepository.save(personalInfo);
@@ -80,7 +80,7 @@ public class PersonalInfoService {
         PersonalInfo personalInfo = personalInfoRepository.findById(workerId).get();
         try {
             personalInfo.setBirthday(LocalDate.parse(birthday, DateTimeFormatter.ofPattern("yyyy-MM-dd")));
-        } catch (DateTimeParseException e){
+        } catch (DateTimeParseException e) {
             throw new BirthdayFormatException();
         }
 

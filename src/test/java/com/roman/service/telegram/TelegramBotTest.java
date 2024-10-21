@@ -335,6 +335,16 @@ public class TelegramBotTest extends DockerInitializer {
 
     }
 
+    /*
+    Help command block
+     */
+
+    @Test
+    @DisplayName("Testing the help command by another post")
+    void helpCommandTest(){
+
+    }
+
     static Message messageFactory(String requestText) {
         User roman = new User(1L, "Roman", false);
         roman.setLastName("Zemchenkov");

@@ -1,0 +1,42 @@
+DROP TABLE IF EXISTS personal_info CASCADE ;
+DROP TABLE IF EXISTS state CASCADE ;
+DROP TABLE IF EXISTS worker CASCADE ;
+DROP TABLE IF EXISTS post CASCADE ;
+DROP TABLE IF EXISTS company CASCADE ;
+
+CREATE TABLE company
+(
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(256) NOT NULL
+);
+
+CREATE TABLE post
+(
+    id BIGSERIAL PRIMARY KEY,
+    title VARCHAR(128) NOT NULL UNIQUE
+);
+
+CREATE TABLE worker
+(
+    id BIGINT PRIMARY KEY
+);
+
+CREATE TABLE state
+(
+    worker_id BIGINT PRIMARY KEY REFERENCES worker(id),
+    stage VARCHAR(32),
+    state VARCHAR(32)
+);
+
+CREATE TABLE personal_info
+(
+    worker_id BIGINT PRIMARY KEY REFERENCES worker(id),
+    firstname VARCHAR(128) NOT NULL,
+    lastname VARCHAR(128) NOT NULL,
+    patronymic VARCHAR(128),
+    username VARCHAR(128) NOT NULL UNIQUE,
+    birthday DATE,
+    company_id BIGINT REFERENCES company(id),
+    post_id BIGINT REFERENCES post(id)
+
+);

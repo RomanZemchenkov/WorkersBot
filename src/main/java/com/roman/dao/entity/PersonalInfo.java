@@ -67,7 +67,7 @@ public class PersonalInfo implements BaseEntity<Long>{
 
     public void setPost(Post post){
         this.post = post;
-        post.getWorkers().add(this);
+        post.getPersonalInfos().add(this);
     }
 
     public void setWorker(Worker worker){

@@ -3,6 +3,7 @@ package com.roman.service.telegram;
 import com.roman.Stages;
 import com.roman.dao.entity.State;
 import com.roman.service.StateService;
+import com.roman.service.telegram.help.HelpService;
 import com.roman.service.telegram.registration.RegistrationService;
 import com.roman.service.telegram.registration.RegistrationState;
 import lombok.RequiredArgsConstructor;
@@ -18,13 +19,16 @@ import java.util.Optional;
 public class TelegramCommandImpl implements TelegramCommand {
 
     private final RegistrationService registrationService;
+    private final HelpService helpService;
     private final StateService stateService;
     private final TelegramMessageSender telegramMessageSender;
 
     public TelegramCommandImpl(RegistrationService registrationService,
+                               @Lazy HelpService helpService,
                                StateService stateService,
                                @Lazy TelegramMessageSender telegramMessageSender) {
         this.registrationService = registrationService;
+        this.helpService = helpService;
         this.stateService = stateService;
         this.telegramMessageSender = telegramMessageSender;
     }
@@ -43,7 +47,9 @@ public class TelegramCommandImpl implements TelegramCommand {
     @Override
     public void helpCommand(Message message) {
         User currentUser = message.getFrom();
-
+        String response = helpService.checkUserPost(currentUser);
+        SendMessage responseMessage = new SendMessage(String.valueOf(message.getChatId()), response);
+        telegramMessageSender.sendResponse(responseMessage);
     }
 
 
