@@ -7,7 +7,7 @@ public interface TelegramCommand{
 
     void startCommand(Long chatId);
 
-    void helpCommand(Long chatId);
+    void helpCommand(Message message);
 
     void registration(Message message);
 

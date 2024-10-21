@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.User;
 
 import java.util.Optional;
 
@@ -40,8 +41,9 @@ public class TelegramCommandImpl implements TelegramCommand {
     }
 
     @Override
-    public void helpCommand(Long chatId) {
-        String message = "Я тебе ничем не помогу,ха-ха";
+    public void helpCommand(Message message) {
+        User currentUser = message.getFrom();
+
     }
 
 
@@ -59,6 +61,10 @@ public class TelegramCommandImpl implements TelegramCommand {
                 case REGISTRATION -> {
                     RegistrationState currentUserState = RegistrationState.valueOf(currentState);
                     registrationService.checkRegistrationState(message,currentUserState);
+                }
+                case EMPTY_STAGE -> {
+                    SendMessage response = new SendMessage(String.valueOf(message.getChatId()), "Команда не распознана. Пожалуйста, введите команду /help.");
+                    telegramMessageSender.sendResponse(response);
                 }
             }
             System.out.println(" Проблема ");

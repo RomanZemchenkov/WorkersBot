@@ -4,8 +4,8 @@ import lombok.Getter;
 
 @Getter
 public enum Stages {
-    REGISTRATION("REGISTRATION");
-
+    REGISTRATION("REGISTRATION"),
+    EMPTY_STAGE("Empty stage");
 
     private String info;
 

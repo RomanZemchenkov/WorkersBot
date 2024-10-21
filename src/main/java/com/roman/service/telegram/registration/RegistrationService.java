@@ -1,6 +1,7 @@
 package com.roman.service.telegram.registration;
 
 import com.roman.Stages;
+import com.roman.States;
 import com.roman.service.StateService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.statemachine.StateMachineEventResult;
@@ -52,7 +53,10 @@ public class RegistrationService {
         Message message = result.getMessage().getHeaders().get(REGISTRATION_MESSAGE_KEY, Message.class);
         Long workerId = message.getFrom().getId();
         RegistrationState currentStateAfterDoEvent = result.getRegion().getState().getId();
-        stateService.updateOrCreateWorkerState(workerId, Stages.REGISTRATION, currentStateAfterDoEvent.name());
-        //если всё хорошо, то мы обновляем состояние для этого пользователя в бд
+        if(currentStateAfterDoEvent.equals(RegistrationState.REGISTRATION_COMPLETE)){
+            stateService.updateOrCreateWorkerState(workerId,Stages.EMPTY_STAGE, States.EMPTY_STATE.name());
+        } else {
+            stateService.updateOrCreateWorkerState(workerId, Stages.REGISTRATION, currentStateAfterDoEvent.name());
+        }
     }
 }

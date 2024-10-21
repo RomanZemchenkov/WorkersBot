@@ -37,7 +37,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         Long chatId = message.getChatId();
         switch (messageText) {
             case "/start" -> telegramCommand.startCommand(chatId);
-            case "/help" -> telegramCommand.helpCommand(chatId);
+            case "/help" -> telegramCommand.helpCommand(message);
             case "/registration" -> telegramCommand.registration(message);
             default ->  telegramCommand.anotherMessage(message);
         }

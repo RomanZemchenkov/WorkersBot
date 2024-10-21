@@ -39,6 +39,9 @@ public class TelegramBotTest extends DockerInitializer {
         this.telegramBot = telegramBot;
     }
 
+    /*
+    Registration tests block
+     */
     @Test
     @Transactional
     void fullDirectorRegistrationTest() {
@@ -307,6 +310,29 @@ public class TelegramBotTest extends DockerInitializer {
         Mockito.verify(telegramCommand, Mockito.times(1)).registration(registratioMessage);
         Mockito.verify(messageSender, Mockito.times(1))
                 .sendResponse(Mockito.any(SendMessage.class));
+    }
+
+
+    /*
+    Empty states and wrong commands block
+     */
+
+    @Test
+    @DisplayName("Testing the wrong command with empty worker`s state")
+    @Transactional
+    void wrongCommandWithEmptyWorkerState(){
+        entityManager.createNativeQuery("INSERT INTO worker(id) VALUES(1)").executeUpdate();
+        entityManager.createNativeQuery("INSERT INTO state(worker_id, stage, state) VALUES (1,'EMPTY_STAGE','EMPTY_STATE')").executeUpdate();
+
+        Message message = messageFactory("wrong command");
+        Mockito.doNothing().when(messageSender).sendResponse(Mockito.any(SendMessage.class));
+
+        telegramBot.checkQueryFromUser(message);
+
+        SendMessage response = new SendMessage(String.valueOf(message.getChatId()), "Команда не распознана. Пожалуйста, введите команду /help.");
+        Mockito.verify(telegramCommand,Mockito.times(1)).anotherMessage(message);
+        Mockito.verify(messageSender, Mockito.times(1)).sendResponse(response);
+
     }
 
     static Message messageFactory(String requestText) {
