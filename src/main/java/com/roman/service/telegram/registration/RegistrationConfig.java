@@ -12,6 +12,11 @@ import org.springframework.statemachine.config.builders.StateMachineTransitionCo
 import java.util.HashSet;
 import java.util.Set;
 
+import static com.roman.service.telegram.registration.RegistrationMessage.POST_WRITE_MESSAGE;
+import static com.roman.service.telegram.registration.RegistrationMessage.SUCCESSFUL_REGISTRATION_MESSAGE;
+import static com.roman.service.telegram.registration.RegistrationMessage.WRITE_BIRTHDAY_MESSAGE;
+import static com.roman.service.telegram.registration.RegistrationMessage.WRITE_COMPANY_NAME_MESSAGE;
+import static com.roman.service.telegram.registration.RegistrationMessage.WRITE_DIRECTOR_USERNAME_MESSAGE;
 import static com.roman.service.telegram.registration.RegistrationState.*;
 
 @Configuration
@@ -47,37 +52,37 @@ public class RegistrationConfig extends EnumStateMachineConfigurerAdapter<Regist
                     .source(WAITING_POST)
                     .target(WAITING_COMPANY_NAME)
                     .event(RegistrationEvent.ENTER_DIRECTOR_POST)
-                    .action(registrationActions.afterEnterPostAction("Введите название компании.")) // просим ввести компанию
+                    .action(registrationActions.afterEnterPostAction(WRITE_COMPANY_NAME_MESSAGE)) // просим ввести компанию
                     .and()
                         .withExternal()
                         .source(WAITING_COMPANY_NAME)
                         .target(WAITING_BIRTHDAY)
                         .event(RegistrationEvent.ENTER_COMPANY)
-                        .action(registrationActions.afterDirectorEnterCompanyName()) // просим ввести день рождения
+                        .action(registrationActions.afterDirectorEnterCompanyName(WRITE_BIRTHDAY_MESSAGE)) // просим ввести день рождения
                         .and()
                 .withExternal()
                     .source(WAITING_POST)
                     .target(WAITING_DIRECTOR_USERNAME)
                     .event(RegistrationEvent.ENTER_ANOTHER_POST)
-                    .action(registrationActions.sendNotificationToUserAction()) // просим ввести username директора
+                    .action(registrationActions.sendNotificationToUserAction(WRITE_DIRECTOR_USERNAME_MESSAGE)) // просим ввести username директора
                     .and()
                         .withExternal()
                         .source(WAITING_DIRECTOR_USERNAME)
                         .target(WAITING_ANOTHER_POST)
                         .event(RegistrationEvent.ENTER_DIRECTOR_USERNAME)
-                        .action(registrationActions.afterEnterDirectorUsername()) //просим ввести должность
+                        .action(registrationActions.afterEnterDirectorUsername(POST_WRITE_MESSAGE)) //просим ввести должность
                         .and()
                             .withExternal()
                             .source(WAITING_ANOTHER_POST)
                             .target(WAITING_BIRTHDAY)
                             .event(RegistrationEvent.ENTER_POST)
-                            .action(registrationActions.afterEnterPostAction("Пожалуйста, введи ваш день рождения.")) //просим ввести день рождения
+                            .action(registrationActions.afterEnterPostAction(WRITE_BIRTHDAY_MESSAGE)) //просим ввести день рождения
                             .and()
                 .withExternal()
                     .source(WAITING_BIRTHDAY)
                     .target(REGISTRATION_COMPLETE)
                     .event(RegistrationEvent.ENTER_BIRTHDAY)
-                    .action(registrationActions.enterBirthdayAction());
+                    .action(registrationActions.enterBirthdayAction(SUCCESSFUL_REGISTRATION_MESSAGE));
 
     }
 

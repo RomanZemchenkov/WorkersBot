@@ -7,6 +7,9 @@ import org.springframework.statemachine.StateMachineEventResult;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
+import static com.roman.service.telegram.registration.RegistrationMessage.DIRECTOR_POST;
+import static com.roman.service.telegram.registration.RegistrationMessage.REGISTRATION_MESSAGE_KEY;
+
 @Component
 @RequiredArgsConstructor
 public class RegistrationService {
@@ -24,7 +27,7 @@ public class RegistrationService {
             case WAITING_COMPANY_NAME -> sendEvent(message,RegistrationEvent.ENTER_COMPANY);
             case WAITING_POST -> {
                 String post = message.getText();
-                sendEvent(message,post.equals("director") ? RegistrationEvent.ENTER_DIRECTOR_POST : RegistrationEvent.ENTER_ANOTHER_POST);
+                sendEvent(message,post.equals(DIRECTOR_POST) ? RegistrationEvent.ENTER_DIRECTOR_POST : RegistrationEvent.ENTER_ANOTHER_POST);
             }
             case WAITING_DIRECTOR_USERNAME -> sendEvent(message, RegistrationEvent.ENTER_DIRECTOR_USERNAME);
             case WAITING_ANOTHER_POST -> sendEvent(message, RegistrationEvent.ENTER_POST);
@@ -46,7 +49,7 @@ public class RegistrationService {
     }
 
     private void writeState(StateMachineEventResult<RegistrationState, RegistrationEvent> result) {
-        Message message = result.getMessage().getHeaders().get("message", Message.class);
+        Message message = result.getMessage().getHeaders().get(REGISTRATION_MESSAGE_KEY, Message.class);
         Long workerId = message.getFrom().getId();
         RegistrationState currentStateAfterDoEvent = result.getRegion().getState().getId();
         stateService.updateOrCreateWorkerState(workerId, Stages.REGISTRATION, currentStateAfterDoEvent.name());

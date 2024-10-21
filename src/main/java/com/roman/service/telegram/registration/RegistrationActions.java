@@ -19,7 +19,12 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.User;
 
-import static com.roman.service.dto.ResponseMessage.REGISTRATION_MESSAGE;
+import static com.roman.service.telegram.registration.RegistrationMessage.POST_WRITE_MESSAGE;
+import static com.roman.service.telegram.registration.RegistrationMessage.REGISTRATION_MESSAGE_KEY;
+import static com.roman.service.telegram.registration.RegistrationMessage.START_REGISTRATION_MESSAGE;
+import static com.roman.service.telegram.registration.RegistrationMessage.SUCCESSFUL_REGISTRATION_MESSAGE;
+import static com.roman.service.telegram.registration.RegistrationMessage.WRITE_BIRTHDAY_MESSAGE;
+import static com.roman.service.telegram.registration.RegistrationMessage.WRITE_DIRECTOR_USERNAME_MESSAGE;
 
 @Component
 public class RegistrationActions {
@@ -47,7 +52,7 @@ public class RegistrationActions {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Action<RegistrationState, RegistrationEvent> afterRegistrationAction() {
         return context -> {
-            Message message = (Message) context.getMessageHeader("message");
+            Message message = (Message) context.getMessageHeader(REGISTRATION_MESSAGE_KEY);
             SendMessage response = createWorker(message);
             sender.sendResponse(response);
         };
@@ -56,7 +61,7 @@ public class RegistrationActions {
     //логика по назначению должности
     public Action<RegistrationState, RegistrationEvent> afterEnterPostAction(String responseMessage) {
         return context -> {
-            Message message = (Message) context.getMessageHeader("message");
+            Message message = (Message) context.getMessageHeader(REGISTRATION_MESSAGE_KEY);
             String post = message.getText();
             Long workerId = message.getFrom().getId();
             personalInfoService.updatePersonalInfoPost(workerId, post);
@@ -70,68 +75,66 @@ public class RegistrationActions {
         };
 
     }
+
     //Логика по созданию компании после регистрации должности директора
-    public Action<RegistrationState, RegistrationEvent> afterDirectorEnterCompanyName() {
+    public Action<RegistrationState, RegistrationEvent> afterDirectorEnterCompanyName(String responseMessage) {
         return context -> {
-            Message message = (Message) context.getMessageHeader("message");
+            Message message = (Message) context.getMessageHeader(REGISTRATION_MESSAGE_KEY);
             String companyName = message.getText();
             companyService.findCompanyOrCreate(companyName);
             Long workerId = message.getFrom().getId();
             String chatId = String.valueOf(message.getChatId());
 
-            String messageText = "Пожалуйста, введи ваш день рождения.";
-            updateCompany(companyName,workerId,chatId,messageText);
+            updateCompany(companyName, workerId, chatId, responseMessage);
         };
     }
 
     //Данный метод срабатывает, если выбраная должность не директор
-    public Action<RegistrationState, RegistrationEvent> sendNotificationToUserAction() {
+    public Action<RegistrationState, RegistrationEvent> sendNotificationToUserAction(String responseMessage) {
         return context -> {
-            Message message = (Message) context.getMessageHeader("message");
+            Message message = (Message) context.getMessageHeader(REGISTRATION_MESSAGE_KEY);
             Long userId = message.getFrom().getId();
 
             String chatId = String.valueOf(message.getChatId());
 
-            logger.info("Worker with id {} take notification",userId);
+            logger.info("Worker with id {} take notification", userId);
 
-            SendMessage sendMessage = new SendMessage(chatId, "Пожалуйста, введи username вашего директора в форме 'username' or '@username'.");
+            SendMessage sendMessage = new SendMessage(chatId, responseMessage);
             sender.sendResponse(sendMessage);
         };
     }
 
     //Данные метод ищет компанию по нику директора и присваивет её пользователю
-    public Action<RegistrationState, RegistrationEvent> afterEnterDirectorUsername() {
+    public Action<RegistrationState, RegistrationEvent> afterEnterDirectorUsername(String messageResponse) {
         return context -> {
-            Message message = (Message) context.getMessageHeader("message");
+            Message message = (Message) context.getMessageHeader(REGISTRATION_MESSAGE_KEY);
             Long workerId = message.getFrom().getId();
             String directorUsername = message.getText();
-            if(directorUsername.startsWith("@")){
+            if (directorUsername.startsWith("@")) {
                 directorUsername = directorUsername.substring(1);
             }
             PersonalInfo directorPersonalInfo = personalInfoService.findPersonalInfoWithCompany(directorUsername);
             String companyName = directorPersonalInfo.getCompany().getName();
             String chatId = String.valueOf(message.getChatId());
 
-            String messageText = "Пожалуйста, введите вашу должность.";
-            updateCompany(companyName,workerId,chatId,messageText);
+            updateCompany(companyName, workerId, chatId, messageResponse);
         };
     }
 
 
-
     //Логика по обновлению дня рождения
-    public Action<RegistrationState, RegistrationEvent> enterBirthdayAction() {
+    public Action<RegistrationState, RegistrationEvent> enterBirthdayAction(String messageResponse) {
         return context -> {
-            Message message = (Message) context.getMessageHeader("message");
+            Message message = (Message) context.getMessageHeader(REGISTRATION_MESSAGE_KEY);
             String birthday = message.getText();
             Long workerId = message.getFrom().getId();
 
-            personalInfoService.updatePersonalInfoBirthday(workerId,birthday);
+            personalInfoService.updatePersonalInfoBirthday(workerId, birthday);
 
             String chatId = String.valueOf(message.getChatId());
             logger.info("Worker with id {} put birthday {}", workerId, birthday);
 
-            SendMessage sendMessage = new SendMessage(chatId, "Спасибо за регистрацию!");
+            SendMessage sendMessage = new SendMessage(chatId, messageResponse);
             sender.sendResponse(sendMessage);
         };
     }
@@ -145,13 +148,13 @@ public class RegistrationActions {
         System.out.println("2");
         PersonalToken savedToken = personalTokenService.createToken(user.getId());
         System.out.println("3");
-        String responseMessage = REGISTRATION_MESSAGE.formatted(savedToken.getToken(), savedToken.getPassword());
+        String responseMessage = START_REGISTRATION_MESSAGE.formatted(savedToken.getToken(), savedToken.getPassword());
         logger.info("New worker was create");
         return new SendMessage(String.valueOf(message.getChatId()), responseMessage);
     }
 
-    private void updateCompany(String companyName, Long workerId, String chatId, String message){
-        personalInfoService.updatePersonalInfoCompany(workerId,companyName);
+    private void updateCompany(String companyName, Long workerId, String chatId, String message) {
+        personalInfoService.updatePersonalInfoCompany(workerId, companyName);
 
         logger.info("Worker with id {} put company {}", workerId, companyName);
 
