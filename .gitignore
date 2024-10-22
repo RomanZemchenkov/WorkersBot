@@ -3,6 +3,7 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 **/src/main/resources/application.yaml
+**/src/test/resources/application-test.yaml
 
 ### IntelliJ IDEA ###
 .idea/modules.xml
