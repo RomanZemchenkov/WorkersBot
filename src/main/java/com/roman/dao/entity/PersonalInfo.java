@@ -9,6 +9,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapsId;
+import jakarta.persistence.NamedAttributeNode;
+import jakarta.persistence.NamedEntityGraph;
+import jakarta.persistence.NamedSubgraph;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.EqualsAndHashCode;
@@ -24,6 +27,19 @@ import java.time.LocalDate;
 @Setter
 @ToString(exclude = {"worker"})
 @EqualsAndHashCode(of = {"id"})
+@NamedEntityGraph(
+        name = "PersonalInfo.withAll",
+        attributeNodes = {
+                @NamedAttributeNode(value = "post"),
+                @NamedAttributeNode(value = "worker",subgraph = "workerWithState")
+        },
+        subgraphs = {
+                @NamedSubgraph(
+                        name = "workerWithState",
+                        attributeNodes = @NamedAttributeNode(value = "state")
+                )
+        }
+)
 public class PersonalInfo implements BaseEntity<Long>{
 
     @Id
@@ -40,12 +56,11 @@ public class PersonalInfo implements BaseEntity<Long>{
     private String username;
     @Column(name = "birthday")
     private LocalDate birthday;
-    @ManyToOne(fetch = FetchType.LAZY)
-    private Post post;
+    @Column(name = "chat_id")
+    private Long chatId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "company_id")
-    private Company company;
+    private Post post;
 
     @OneToOne(fetch = FetchType.LAZY)
     @MapsId
@@ -54,15 +69,11 @@ public class PersonalInfo implements BaseEntity<Long>{
 
     public PersonalInfo(){}
 
-    public PersonalInfo(String firstname, String lastname, String username) {
+    public PersonalInfo(String firstname, String lastname, String username, Long chatId) {
         this.firstname = firstname;
         this.lastname = lastname;
         this.username = username;
-    }
-
-    public void setCompany(Company company){
-        this.company = company;
-        company.getPersonalInfo().add(this);
+        this.chatId = chatId;
     }
 
     public void setPost(Post post){

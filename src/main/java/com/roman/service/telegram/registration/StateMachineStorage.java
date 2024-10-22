@@ -1,5 +1,7 @@
 package com.roman.service.telegram.registration;
 
+import com.roman.service.stage.RegistrationEvent;
+import com.roman.service.stage.RegistrationState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +16,7 @@ import java.util.Map;
 @Component
 public class StateMachineStorage {
 
-    private final Map<Long, StateMachine<RegistrationState,RegistrationEvent>> stateMachineMap = new HashMap<>();
+    private final Map<Long, StateMachine<RegistrationState, RegistrationEvent>> stateMachineMap = new HashMap<>();
     private final StateMachineFactory<RegistrationState,RegistrationEvent> stateMachineFactory;
     private static final Logger logger = LoggerFactory.getLogger(StateMachineStorage.class);
 

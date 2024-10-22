@@ -1,8 +1,10 @@
 package com.roman.service.telegram.registration;
 
-import com.roman.Stages;
-import com.roman.States;
+import com.roman.service.stage.Stages;
+import com.roman.service.stage.States;
 import com.roman.service.StateService;
+import com.roman.service.stage.RegistrationEvent;
+import com.roman.service.stage.RegistrationState;
 import lombok.RequiredArgsConstructor;
 import org.springframework.statemachine.StateMachineEventResult;
 import org.springframework.stereotype.Component;

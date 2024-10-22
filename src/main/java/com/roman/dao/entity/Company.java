@@ -21,7 +21,7 @@ import java.util.Set;
 @Entity(name = "company")
 @Getter
 @Setter
-@ToString(exclude = {"personalInfo"})
+@ToString(exclude = {"workers"})
 @EqualsAndHashCode(of = {"id"})
 public class Company implements BaseEntity<Long>{
 
@@ -33,7 +33,7 @@ public class Company implements BaseEntity<Long>{
     private String name;
 
     @OneToMany(mappedBy = "company",fetch = FetchType.LAZY)
-    private Set<PersonalInfo> personalInfo = new HashSet<>();
+    private Set<Worker> workers = new HashSet<>();
 
     public Company(){}
 

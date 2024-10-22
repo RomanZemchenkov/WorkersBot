@@ -1,11 +1,12 @@
-package com.roman;
+package com.roman.service.stage;
 
 import lombok.Getter;
 
 @Getter
 public enum States {
 
-    EMPTY_STATE("Empty state");
+    EMPTY_STATE("EMPTY_STATE"),
+    CHOOSE("CHOOSE");
 
     private final String info;
 

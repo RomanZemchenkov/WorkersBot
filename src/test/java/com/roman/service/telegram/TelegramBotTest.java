@@ -102,11 +102,11 @@ public class TelegramBotTest extends DockerInitializer {
     @Test
     @Transactional
     void fullWorkerRegistrationTest() {
-        entityManager.createNativeQuery("INSERT INTO worker(id) VALUES(100)").executeUpdate();
-        entityManager.createNativeQuery("INSERT INTO post(id, title) VALUES(10,'director')").executeUpdate();
         entityManager.createNativeQuery("INSERT INTO company(id, name) VALUES(1,'Работяги')").executeUpdate();
-        entityManager.createNativeQuery("INSERT INTO personal_info(worker_id, firstname, lastname, patronymic, username, birthday, company_id, post_id)" +
-                                        " VALUES(100,'Roman','Test','Test','Username','2000-02-02',1,10)").executeUpdate();
+        entityManager.createNativeQuery("INSERT INTO worker(id, company_id) VALUES(100, 1)").executeUpdate();
+        entityManager.createNativeQuery("INSERT INTO post(id, title) VALUES(10,'director')").executeUpdate();
+        entityManager.createNativeQuery("INSERT INTO personal_info(worker_id, firstname, lastname, patronymic, username, birthday, post_id)" +
+                                        " VALUES(100,'Roman','Test','Test','Username','2000-02-02',10)").executeUpdate();
 
         Message registratioMessage = messageFactory("/registration");
         Mockito.doNothing().when(messageSender).sendResponse(Mockito.any(SendMessage.class));
@@ -185,11 +185,11 @@ public class TelegramBotTest extends DockerInitializer {
     @Transactional
     @DisplayName("Testing the worker registration with wrong director username")
     void registrationWithWrongDirectorUsername(){
-        entityManager.createNativeQuery("INSERT INTO worker(id) VALUES(100)").executeUpdate();
-        entityManager.createNativeQuery("INSERT INTO post(id, title) VALUES(10,'director')").executeUpdate();
         entityManager.createNativeQuery("INSERT INTO company(id, name) VALUES(1,'Работяги')").executeUpdate();
-        entityManager.createNativeQuery("INSERT INTO personal_info(worker_id, firstname, lastname, patronymic, username, birthday, company_id, post_id)" +
-                                        " VALUES(100,'Roman','Test','Test','Username','2000-02-02',1,10)").executeUpdate();
+        entityManager.createNativeQuery("INSERT INTO worker(id, company_id) VALUES(100, 1)").executeUpdate();
+        entityManager.createNativeQuery("INSERT INTO post(id, title) VALUES(10,'director')").executeUpdate();
+        entityManager.createNativeQuery("INSERT INTO personal_info(worker_id, firstname, lastname, patronymic, username, birthday, post_id)" +
+                                        " VALUES(100,'Roman','Test','Test','Username','2000-02-02',10)").executeUpdate();
 
         Message registratioMessage = messageFactory("/registration");
         Mockito.doNothing().when(messageSender).sendResponse(Mockito.any(SendMessage.class));
@@ -229,11 +229,11 @@ public class TelegramBotTest extends DockerInitializer {
     @DisplayName("Testing the registration with wrong date time format")
     @Transactional
     void registrationWithWrongBirthdayFormat(){
-        entityManager.createNativeQuery("INSERT INTO worker(id) VALUES(100)").executeUpdate();
-        entityManager.createNativeQuery("INSERT INTO post(id, title) VALUES(10,'director')").executeUpdate();
         entityManager.createNativeQuery("INSERT INTO company(id, name) VALUES(1,'Работяги')").executeUpdate();
-        entityManager.createNativeQuery("INSERT INTO personal_info(worker_id, firstname, lastname, patronymic, username, birthday, company_id, post_id)" +
-                                        " VALUES(100,'Roman','Test','Test','Username','2000-02-02',1,10)").executeUpdate();
+        entityManager.createNativeQuery("INSERT INTO worker(id, company_id) VALUES(100, 1)").executeUpdate();
+        entityManager.createNativeQuery("INSERT INTO post(id, title) VALUES(10,'director')").executeUpdate();
+        entityManager.createNativeQuery("INSERT INTO personal_info(worker_id, firstname, lastname, patronymic, username, birthday, post_id)" +
+                                        " VALUES(100,'Roman','Test','Test','Username','2000-02-02',10)").executeUpdate();
 
         Message registratioMessage = messageFactory("/registration");
         Mockito.doNothing().when(messageSender).sendResponse(Mockito.any(SendMessage.class));
@@ -294,11 +294,11 @@ public class TelegramBotTest extends DockerInitializer {
     @DisplayName("Testing the registration with already existed worker")
     @Transactional
     void registrationWithExistedWorker(){
-        entityManager.createNativeQuery("INSERT INTO worker(id) VALUES(1)").executeUpdate();
-        entityManager.createNativeQuery("INSERT INTO post(id, title) VALUES(10,'director')").executeUpdate();
         entityManager.createNativeQuery("INSERT INTO company(id, name) VALUES(1,'Работяги')").executeUpdate();
-        entityManager.createNativeQuery("INSERT INTO personal_info(worker_id, firstname, lastname, patronymic, username, birthday, company_id, post_id)" +
-                                        " VALUES(1,'Roman','Zemchenkov','Test','Roman_Zemchenkov','2000-02-02',1,10)").executeUpdate();
+        entityManager.createNativeQuery("INSERT INTO worker(id, company_id) VALUES(100, 1)").executeUpdate();
+        entityManager.createNativeQuery("INSERT INTO post(id, title) VALUES(10,'director')").executeUpdate();
+        entityManager.createNativeQuery("INSERT INTO personal_info(worker_id, firstname, lastname, patronymic, username, birthday, post_id)" +
+                                        " VALUES(100,'Roman','Test','Test','Username','2000-02-02',10)").executeUpdate();
 
         Message registratioMessage = messageFactory("/registration");
         Mockito.doNothing().when(messageSender).sendResponse(Mockito.any(SendMessage.class));
@@ -321,7 +321,8 @@ public class TelegramBotTest extends DockerInitializer {
     @DisplayName("Testing the wrong command with empty worker`s state")
     @Transactional
     void wrongCommandWithEmptyWorkerState(){
-        entityManager.createNativeQuery("INSERT INTO worker(id) VALUES(1)").executeUpdate();
+        entityManager.createNativeQuery("INSERT INTO company(id, name) VALUES(1,'Работяги')").executeUpdate();
+        entityManager.createNativeQuery("INSERT INTO worker(id, company_id) VALUES(1,1)").executeUpdate();
         entityManager.createNativeQuery("INSERT INTO state(worker_id, stage, state) VALUES (1,'EMPTY_STAGE','EMPTY_STATE')").executeUpdate();
 
         Message message = messageFactory("wrong command");

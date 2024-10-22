@@ -1,6 +1,7 @@
 package com.roman.dao.entity;
 
-import com.roman.Stages;
+import com.roman.service.stage.Stages;
+import com.roman.service.stage.States;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

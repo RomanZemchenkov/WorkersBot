@@ -5,7 +5,7 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 
 public interface TelegramCommand{
 
-    void startCommand(Long chatId);
+    void startCommand(Message chatId);
 
     void helpCommand(Message message);
 

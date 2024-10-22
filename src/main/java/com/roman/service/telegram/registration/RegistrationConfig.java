@@ -1,5 +1,7 @@
 package com.roman.service.telegram.registration;
 
+import com.roman.service.stage.RegistrationEvent;
+import com.roman.service.stage.RegistrationState;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,7 +19,7 @@ import static com.roman.service.telegram.registration.RegistrationMessage.SUCCES
 import static com.roman.service.telegram.registration.RegistrationMessage.WRITE_BIRTHDAY_MESSAGE;
 import static com.roman.service.telegram.registration.RegistrationMessage.WRITE_COMPANY_NAME_MESSAGE;
 import static com.roman.service.telegram.registration.RegistrationMessage.WRITE_DIRECTOR_USERNAME_MESSAGE;
-import static com.roman.service.telegram.registration.RegistrationState.*;
+import static com.roman.service.stage.RegistrationState.*;
 
 @Configuration
 @EnableStateMachineFactory(name = {"registrationMachineFactory"})

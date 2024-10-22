@@ -17,7 +17,8 @@ CREATE TABLE post
 --changeset roman:3
 CREATE TABLE worker
 (
-    id BIGINT PRIMARY KEY
+    id BIGINT PRIMARY KEY,
+    company_id BIGINT REFERENCES company(id)
 );
 
 --changeset roman:4
@@ -37,7 +38,6 @@ CREATE TABLE personal_info
     patronymic VARCHAR(128),
     username VARCHAR(128) NOT NULL UNIQUE,
     birthday DATE,
-    company_id BIGINT REFERENCES company(id),
     post_id BIGINT REFERENCES post(id)
 
 );

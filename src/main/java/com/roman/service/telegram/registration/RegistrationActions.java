@@ -1,12 +1,14 @@
 package com.roman.service.telegram.registration;
 
-import com.roman.dao.entity.PersonalInfo;
 import com.roman.dao.entity.PersonalToken;
+import com.roman.dao.entity.Worker;
 import com.roman.service.CompanyService;
 import com.roman.service.PersonalInfoService;
 import com.roman.service.PersonalTokenService;
 import com.roman.service.WorkerService;
 import com.roman.service.dto.telegram.RegistrationWorkerDto;
+import com.roman.service.stage.RegistrationEvent;
+import com.roman.service.stage.RegistrationState;
 import com.roman.service.telegram.TelegramMessageSender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -112,8 +114,8 @@ public class RegistrationActions {
             if (directorUsername.startsWith("@")) {
                 directorUsername = directorUsername.substring(1);
             }
-            PersonalInfo directorPersonalInfo = personalInfoService.findPersonalInfoWithCompany(directorUsername);
-            String companyName = directorPersonalInfo.getCompany().getName();
+            Worker director = workerService.findWorkerWithCompany(directorUsername);
+            String companyName = director.getCompany().getName();
             String chatId = String.valueOf(message.getChatId());
 
             updateCompany(companyName, workerId, chatId, messageResponse);
@@ -168,7 +170,7 @@ public class RegistrationActions {
 
     private SendMessage createWorker(Message message) {
         User user = message.getFrom();
-        RegistrationWorkerDto workerDto = createWorkerDto(user);
+        RegistrationWorkerDto workerDto = createWorkerDto(user,message.getChatId());
         workerService.createWorker(workerDto);
         System.out.println("1");
         personalInfoService.createPersonalInfo(workerDto);
@@ -181,7 +183,7 @@ public class RegistrationActions {
     }
 
     private void updateCompany(String companyName, Long workerId, String chatId, String message) {
-        personalInfoService.updatePersonalInfoCompany(workerId, companyName);
+        workerService.updateCompany(workerId, companyName);
 
         logger.info("Worker with id {} put company {}", workerId, companyName);
 
@@ -189,11 +191,11 @@ public class RegistrationActions {
         sender.sendResponse(sendMessage);
     }
 
-    private RegistrationWorkerDto createWorkerDto(User user) {
+    private RegistrationWorkerDto createWorkerDto(User user, Long chatId) {
         String workerId = String.valueOf(user.getId());
         String firstName = user.getFirstName();
         String lastName = user.getLastName();
         String userName = user.getUserName();
-        return new RegistrationWorkerDto(workerId, firstName, lastName, userName);
+        return new RegistrationWorkerDto(workerId, firstName, lastName, userName, String.valueOf(chatId));
     }
 }

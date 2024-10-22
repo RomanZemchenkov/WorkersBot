@@ -34,9 +34,8 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     public void checkQueryFromUser(Message message) {
         String messageText = message.getText();
-        Long chatId = message.getChatId();
         switch (messageText) {
-            case "/start" -> telegramCommand.startCommand(chatId);
+            case "/start" -> telegramCommand.startCommand(message);
             case "/help" -> telegramCommand.helpCommand(message);
             case "/registration" -> telegramCommand.registration(message);
             default ->  telegramCommand.anotherMessage(message);

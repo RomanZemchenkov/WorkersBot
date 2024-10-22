@@ -1,13 +1,9 @@
-package com.roman.service.telegram.registration;
+package com.roman.service.stage;
 
 import lombok.Getter;
 
 @Getter
 public enum RegistrationEvent {
-//    START_REGISTRATION("User was enter the command '/registration'"),
-//    ENTER_POST("User was enter yours post"),
-//    ENTER_COMPANY("User was enter the company name"),
-//    ENTER_BIRTHDAY("User was enter the yours birthday");
 
     START_REGISTRATION("User was enter the command '/registration'"),
     ENTER_DIRECTOR_POST("User was enter director post"),

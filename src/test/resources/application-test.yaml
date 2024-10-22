@@ -2,3 +2,6 @@ spring:
   datasource:
     username: test
     password: test
+
+bot:
+  token: "7746413577:AAGrQ5eeuNHhnFPasx_UFahiUYUvyUsWEYI"

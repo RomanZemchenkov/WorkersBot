@@ -1,6 +1,7 @@
 package com.roman.service;
 
-import com.roman.Stages;
+import com.roman.service.stage.Stages;
+import com.roman.service.stage.States;
 import com.roman.dao.entity.State;
 import com.roman.dao.entity.Worker;
 import com.roman.dao.repository.StateRepository;

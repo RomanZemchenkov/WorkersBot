@@ -1,9 +1,9 @@
-package com.roman.service.telegram.registration;
+package com.roman.service.stage;
 
 import lombok.Getter;
 
 @Getter
-public enum RegistrationState {
+public enum RegistrationState{
     WAITING("Waiting for the user to enter the command '/registration.'"),
     WAITING_POST("Waiting for the user to choose director or another"),
     WAITING_COMPANY_NAME("Waiting for the user to enter the yours company name."),

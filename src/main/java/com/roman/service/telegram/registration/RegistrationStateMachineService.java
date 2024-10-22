@@ -1,5 +1,7 @@
 package com.roman.service.telegram.registration;
 
+import com.roman.service.stage.RegistrationEvent;
+import com.roman.service.stage.RegistrationState;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,6 +13,8 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.User;
 import reactor.core.publisher.Mono;
+
+import static com.roman.service.telegram.registration.RegistrationMessage.REGISTRATION_MESSAGE_KEY;
 
 
 @Component
@@ -35,7 +39,7 @@ public class RegistrationStateMachineService {
                                                                                          Message message, RegistrationEvent currentEvent) {
         org.springframework.messaging.Message<RegistrationEvent> eventMessage = MessageBuilder
                 .withPayload(currentEvent)
-                .setHeader("message", message)
+                .setHeader(REGISTRATION_MESSAGE_KEY, message)
                 .build();
 
         return sm.sendEvent(Mono.just(eventMessage)).next();
