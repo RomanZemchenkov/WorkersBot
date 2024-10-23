@@ -17,8 +17,8 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 @Table
 @Entity(name = "meeting")
@@ -44,5 +44,15 @@ public class Meeting implements BaseEntity<Long>{
             joinColumns = {@JoinColumn(name = "meeting_id")},
             inverseJoinColumns = {@JoinColumn(name = "worker_id")}
     )
-    private Set<Worker> workers = new HashSet<>();
+    private List<Worker> workers = new ArrayList<>();
+
+    public Meeting(){}
+
+    public Meeting(String title, LocalDateTime time, List<Worker> workers) {
+        this.title = title;
+        this.time = time;
+        this.workers = workers;
+    }
+
+    //Подумать, нужно ли делать сеттер, чтобы сразу назначать каждому работнику встречу
 }

@@ -1,10 +1,9 @@
 package com.roman.service;
 
 import com.roman.dao.entity.Company;
-import com.roman.dao.entity.PersonalInfo;
 import com.roman.dao.entity.Worker;
 import com.roman.dao.repository.CompanyRepository;
-import com.roman.dao.repository.WorkerRepository;
+import com.roman.dao.repository.worker.WorkerRepository;
 import com.roman.service.dto.telegram.RegistrationWorkerDto;
 import com.roman.service.dto.worker.ShowWorkerDto;
 import com.roman.service.exception.UsernameDoesntExistException;
@@ -15,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,6 +44,11 @@ public class WorkerService {
                 .stream()
                 .map(workerMapper::mapToShow)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<Worker> findAllWorkers(String[] workersId){
+        return workerRepository.findAllWorkerById(Arrays.stream(workersId).map(Long::parseLong).toList());
     }
 
     @Transactional(readOnly = true)

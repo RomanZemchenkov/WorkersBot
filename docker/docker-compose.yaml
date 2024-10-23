@@ -11,3 +11,12 @@ services:
       - "POSTGRES_USER=roman"
       - "POSTGRES_PASSWORD=1234"
       - "POSTGRES_DB=workers_bot_db"
+
+  redis_database:
+    container_name: "workers_redis"
+    restart: "always"
+    image: "redis:7.4.0"
+    ports:
+      - "6379:6379"
+    depends_on:
+      - "database"

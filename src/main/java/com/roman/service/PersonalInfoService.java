@@ -4,7 +4,7 @@ import com.roman.dao.entity.PersonalInfo;
 import com.roman.dao.entity.Post;
 import com.roman.dao.entity.Worker;
 import com.roman.dao.repository.PersonalInfoRepository;
-import com.roman.dao.repository.WorkerRepository;
+import com.roman.dao.repository.worker.WorkerRepository;
 import com.roman.service.dto.telegram.RegistrationWorkerDto;
 import com.roman.service.dto.worker.ShowFullInfoWorkerDto;
 import com.roman.service.exception.BirthdayFormatException;

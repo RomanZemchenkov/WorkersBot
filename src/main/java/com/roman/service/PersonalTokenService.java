@@ -3,7 +3,7 @@ package com.roman.service;
 import com.roman.dao.entity.PersonalToken;
 import com.roman.dao.entity.Worker;
 import com.roman.dao.repository.PersonalTokenRepository;
-import com.roman.dao.repository.WorkerRepository;
+import com.roman.dao.repository.worker.WorkerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

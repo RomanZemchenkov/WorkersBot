@@ -1,9 +1,10 @@
-package com.roman.dao.repository;
+package com.roman.dao.repository.worker;
 
 import com.roman.dao.entity.Worker;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,6 +23,10 @@ public interface WorkerRepository extends JpaRepository<Worker,Long> {
 
     @EntityGraph(type = EntityGraph.EntityGraphType.LOAD, value = "Worker.withAll")
     List<Worker> findAllWorkersByCompanyId(Long companyId);
+
+    @Transactional(readOnly = true)
+    @Query(value = "SELECT w FROM worker w WHERE w.id IN :ids")
+    List<Worker> findAllWorkerById(List<Long> ids);
 
     @EntityGraph(type = EntityGraph.EntityGraphType.LOAD, value = "Worker.withAll")
     Optional<Worker> findAllById(Long id);
