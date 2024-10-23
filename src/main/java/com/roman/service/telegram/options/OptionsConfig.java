@@ -43,7 +43,11 @@ public class OptionsConfig extends StateMachineConfigurerAdapter<OptionsState, O
                         OBSERVED_MEETINGS,
                         CHOOSE_WORKER_FOR_CALLING,
                         WILL_CHANGE_WORKER_INFORMATION,
-                        WILL_CREATE_MEETING,
+                        CHOOSE_MEETING_OPERATION,
+                        CREATE_MEETING,
+                        ADD_MEETING_PARTICIPANTS,
+                        ADD_MEETING_TIME,
+                        ADD_MEETING_TITLE,
                         OBSERVED_WORKER)));
     }
 
@@ -73,6 +77,37 @@ public class OptionsConfig extends StateMachineConfigurerAdapter<OptionsState, O
                         .target(OBSERVED_WORKERS)
                         .event(OptionEvent.WANT_TO_CALLING_WORKER_BY_TIME)
                         .action(actions.callingWorkerWithTimeAction())
-                        .and();
+                        .and()
+                .withExternal()
+                .source(CHOOSE)
+                .target(CHOOSE_MEETING_OPERATION)
+                .event(OptionEvent.WANT_TO_OPEN_MEETING_MENU)
+                .action(actions.callingMeetingMenu())
+                .and()
+                    .withExternal()
+                    .source(CHOOSE_MEETING_OPERATION)
+                    .target(CREATE_MEETING)
+                    .event(OptionEvent.WANT_TO_CREATE_MEETING)
+                    .action(actions.callingCreateMeetingAction())
+                    .and()
+                        .withExternal()
+                        .source(CREATE_MEETING)
+                        .target(ADD_MEETING_PARTICIPANTS)
+                        .event(OptionEvent.WANT_TO_ADD_PARTICIPANTS)
+                        .action(actions.settingMeetingParticipantsAction())
+                        .and()
+                            .withExternal()
+                            .source(ADD_MEETING_PARTICIPANTS)
+                            .target(ADD_MEETING_TIME)
+                            .event(OptionEvent.WANT_TO_ADD_TIME)
+                            .action(actions.settingMeetingTimeAction())
+                            .and()
+                                .withExternal()
+                                .source(ADD_MEETING_TIME)
+                                .target(ADD_MEETING_TITLE)
+                                .event(OptionEvent.WANT_TO_ADD_TITLE)
+                                .action(actions.settingMeetingTitleAction())
+                                .and();
+
     }
 }

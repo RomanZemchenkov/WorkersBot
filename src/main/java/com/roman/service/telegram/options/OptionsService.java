@@ -22,6 +22,7 @@ public class OptionsService {
                 String currentCommand = message.getText();
                 switch (currentCommand){
                     case "/workers" -> sendEvent(message,OptionEvent.WANT_TO_WATCH_WORKERS);
+                    case "/meetings" -> sendEvent(message, OptionEvent.WANT_TO_OPEN_MEETING_MENU);
                 }
             }
             case OBSERVED_WORKERS -> sendEvent(message, OptionEvent.WANT_TO_WATCH_ONE_WORKER);
@@ -33,6 +34,16 @@ public class OptionsService {
                     case 3, 4 -> sendEvent(message, OptionEvent.WANT_TO_CALLING_WORKER_BY_TIME);
                 }
             }
+            case CHOOSE_MEETING_OPERATION -> {
+                String currentCommand = message.getText();
+                switch (currentCommand){
+                    case "/addMeeting" -> sendEvent(message, OptionEvent.WANT_TO_CREATE_MEETING);
+                }
+            }
+            case CREATE_MEETING -> sendEvent(message,OptionEvent.WANT_TO_ADD_PARTICIPANTS);
+            case ADD_MEETING_PARTICIPANTS -> sendEvent(message,OptionEvent.WANT_TO_ADD_TIME);
+            case ADD_MEETING_TIME -> sendEvent(message,OptionEvent.WANT_TO_ADD_TITLE);
+
         }
     }
 

@@ -8,6 +8,8 @@ import com.roman.service.exception.MessageFormatException;
 import com.roman.service.stage.OptionEvent;
 import com.roman.service.stage.OptionsState;
 import com.roman.service.telegram.TelegramMessageSender;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.statemachine.action.Action;
@@ -21,7 +23,6 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.Arrays;
 import java.util.List;
 
 @Component
@@ -31,6 +32,7 @@ public class OptionsActions {
     private final WorkerService workerService;
     private final PersonalInfoService personalInfoService;
     private static final String OPTIONS_ACTION_KEY = "message";
+    private static final Logger logger = LoggerFactory.getLogger(OptionsActions.class);
 
     @Autowired
     public OptionsActions(@Lazy TelegramMessageSender messageSender,
@@ -126,6 +128,51 @@ public class OptionsActions {
         };
     }
 
+    /*
+    Meetings block
+     */
+
+    public Action<OptionsState, OptionEvent> callingMeetingMenu() {
+        return context -> {
+            logger.info("User want to watch meetings menu.");
+        };
+    }
+
+    public Action<OptionsState, OptionEvent> callingCreateMeetingAction() {
+        return context -> {
+            Message message = (Message) context.getMessageHeader(OPTIONS_ACTION_KEY);
+            send(message,"Вам представлен список ваших сотрудников. Введите, пожалуйста, их номера из этого списка через запятую.");
+        };
+    }
+
+
+    public Action<OptionsState, OptionEvent> settingMeetingParticipantsAction() {
+        return context -> {
+            Message message = (Message) context.getMessageHeader(OPTIONS_ACTION_KEY);
+            String participantsList = message.getText();
+            send(message,"Введите, пожалуйста, время встречи в одном из двух форматов:\n" +
+                         "1. yyyy-MM-dd HH:mm Пример: 2024-10-10 13:30 - встреча будет назначена на определённую дату\n" +
+                         "2. HH:mm Пример: 13:30 - встреча будет назначена на сегодня\n");
+        };
+    }
+
+
+    public Action<OptionsState, OptionEvent> settingMeetingTimeAction() {
+        return context -> {
+            Message message = (Message) context.getMessageHeader(OPTIONS_ACTION_KEY);
+            String time = message.getText();
+            send(message,"Введите, пожалуйста, название или тему встречи.");
+        };
+    }
+
+    public Action<OptionsState, OptionEvent> settingMeetingTitleAction() {
+        return context -> {
+            Message message = (Message) context.getMessageHeader(OPTIONS_ACTION_KEY);
+            String title = message.getText();
+            send(message,"Встреча создана, приглашения отправлены.");
+        };
+    }
+
     private LocalDateTime formatToLocalDateTime(String... time) throws ArrayIndexOutOfBoundsException, DateTimeParseException {
         LocalDateTime meetingTime;
         if(time.length == 1){
@@ -145,5 +192,7 @@ public class OptionsActions {
         SendMessage response = new SendMessage(chatId, responseMessage);
         messageSender.sendResponse(response);
     }
+
+
 
 }
