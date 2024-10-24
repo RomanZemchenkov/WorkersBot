@@ -43,7 +43,7 @@ public class OptionsActions {
         this.personalInfoService = personalInfoService;
     }
 
-    public Action<OptionsState, OptionEvent> watchWorkersAction(){
+    public Action<OptionsState, OptionEvent> watchWorkersAction() {
         return context -> {
             Message message = (Message) context.getMessageHeader(OPTIONS_ACTION_KEY);
             User currentUser = message.getFrom();
@@ -52,31 +52,31 @@ public class OptionsActions {
             List<ShowWorkerDto> allWorkers = workerService.findAllWorkers(directorId);
             StringBuilder sb = new StringBuilder();
             allWorkers.forEach(worker -> sb.append(worker.toString()).append("\n"));
-            send(message,sb.toString());
+            send(message, sb.toString());
         };
     }
 
-    public Action<OptionsState, OptionEvent> watchOneWorkerAction(){
+    public Action<OptionsState, OptionEvent> watchOneWorkerAction() {
         return context -> {
             Message message = (Message) context.getMessageHeader(OPTIONS_ACTION_KEY);
             String workerUsername;
             try {
                 workerUsername = message.getText().split(" ")[1];
-            } catch (ArrayIndexOutOfBoundsException e){
+            } catch (ArrayIndexOutOfBoundsException e) {
                 throw new MessageFormatException("Вы не ввели юзернейм пользователя");
             }
             ShowFullInfoWorkerDto fullInfo = personalInfoService.findFullInfo(workerUsername);
-            send(message,fullInfo.toString());
+            send(message, fullInfo.toString());
         };
     }
 
-    public Action<OptionsState, OptionEvent> callingWorkerAction(){
+    public Action<OptionsState, OptionEvent> callingWorkerAction() {
         return context -> {
             Message message = (Message) context.getMessageHeader(OPTIONS_ACTION_KEY);
             String workerUsername;
             try {
                 workerUsername = message.getText().split(" ")[1];
-            } catch (ArrayIndexOutOfBoundsException e){
+            } catch (ArrayIndexOutOfBoundsException e) {
                 throw new MessageFormatException("Вы не ввели юзернейм пользователя");
             }
             //отправить сообщение сотруднику
@@ -90,26 +90,26 @@ public class OptionsActions {
             List<ShowWorkerDto> allWorkers = workerService.findAllWorkers(directorId);
             StringBuilder sb = new StringBuilder("Приглашение успешно доставлено.\n");
             allWorkers.forEach(worker -> sb.append(worker.toString()).append("\n"));
-            send(message,sb.toString());
+            send(message, sb.toString());
         };
     }
 
-    public Action<OptionsState, OptionEvent> callingWorkerWithTimeAction(){
+    public Action<OptionsState, OptionEvent> callingWorkerWithTimeAction() {
         return context -> {
             Message message = (Message) context.getMessageHeader(OPTIONS_ACTION_KEY);
             String[] commandBySpit = message.getText().split(" ");
             String workerUsername;
             try {
                 workerUsername = commandBySpit[1];
-            } catch (Throwable e){
+            } catch (Throwable e) {
                 throw new MessageFormatException("Вы не ввели юзернейм пользователя");
             }
             LocalDateTime time;
             try {
-                 time = commandBySpit.length == 3 ?
-                         formatToLocalDateTime(commandBySpit[2]) :
-                         formatToLocalDateTime(commandBySpit[2],commandBySpit[3]);
-            } catch (ArrayIndexOutOfBoundsException | DateTimeParseException e){
+                time = commandBySpit.length == 3 ?
+                        formatToLocalDateTime(commandBySpit[2]) :
+                        formatToLocalDateTime(commandBySpit[2], commandBySpit[3]);
+            } catch (ArrayIndexOutOfBoundsException | DateTimeParseException e) {
                 throw new RuntimeException("Неправильно ввели дату");
             }
             //отправить сообщение сотруднику
@@ -124,7 +124,7 @@ public class OptionsActions {
             List<ShowWorkerDto> allWorkers = workerService.findAllWorkers(directorId);
             StringBuilder sb = new StringBuilder("Приглашение успешно доставлено.\n");
             allWorkers.forEach(worker -> sb.append(worker.toString()).append("\n"));
-            send(message,sb.toString());
+            send(message, sb.toString());
         };
     }
 
@@ -141,7 +141,14 @@ public class OptionsActions {
     public Action<OptionsState, OptionEvent> callingCreateMeetingAction() {
         return context -> {
             Message message = (Message) context.getMessageHeader(OPTIONS_ACTION_KEY);
-            send(message,"Вам представлен список ваших сотрудников. Введите, пожалуйста, их номера из этого списка через запятую.");
+            /*
+            Нужно создать запись в редисе, которую мы дальше будем заполнять
+            Ну и нужно будет вернуть список струдников с их номерами от 1 до n
+            Для этого мы будем в кеш редиса сохранять id сотрудника под ключом directorId::number::workerId
+            А дальше, когда номера сотрудников будут выбраны, мы просто будем из кеша доставать их и чистить данный кеш
+            */
+
+            send(message, "Вам представлен список ваших сотрудников. Введите, пожалуйста, их номера из этого списка через запятую.");
         };
     }
 
@@ -150,9 +157,9 @@ public class OptionsActions {
         return context -> {
             Message message = (Message) context.getMessageHeader(OPTIONS_ACTION_KEY);
             String participantsList = message.getText();
-            send(message,"Введите, пожалуйста, время встречи в одном из двух форматов:\n" +
-                         "1. yyyy-MM-dd HH:mm Пример: 2024-10-10 13:30 - встреча будет назначена на определённую дату\n" +
-                         "2. HH:mm Пример: 13:30 - встреча будет назначена на сегодня\n");
+            send(message, "Введите, пожалуйста, время встречи в одном из двух форматов:\n" +
+                          "1. yyyy-MM-dd HH:mm Пример: 2024-10-10 13:30 - встреча будет назначена на определённую дату\n" +
+                          "2. HH:mm Пример: 13:30 - встреча будет назначена на сегодня\n");
         };
     }
 
@@ -161,7 +168,7 @@ public class OptionsActions {
         return context -> {
             Message message = (Message) context.getMessageHeader(OPTIONS_ACTION_KEY);
             String time = message.getText();
-            send(message,"Введите, пожалуйста, название или тему встречи.");
+            send(message, "Введите, пожалуйста, название или тему встречи.");
         };
     }
 
@@ -169,30 +176,29 @@ public class OptionsActions {
         return context -> {
             Message message = (Message) context.getMessageHeader(OPTIONS_ACTION_KEY);
             String title = message.getText();
-            send(message,"Встреча создана, приглашения отправлены.");
+            send(message, "Встреча создана, приглашения отправлены.");
         };
     }
 
     private LocalDateTime formatToLocalDateTime(String... time) throws ArrayIndexOutOfBoundsException, DateTimeParseException {
         LocalDateTime meetingTime;
-        if(time.length == 1){
+        if (time.length == 1) {
             String[] splitTime = time[0].split(":");
             LocalTime localTime = LocalTime.of(Integer.parseInt(splitTime[0]), Integer.parseInt(splitTime[1]));
-            meetingTime = LocalDateTime.of(LocalDate.now(),localTime);
+            meetingTime = LocalDateTime.of(LocalDate.now(), localTime);
         } else {
             String[] splitDate = time[0].split("-");
             String[] splitTime = time[1].split(":");
-            meetingTime = LocalDateTime.of(Integer.parseInt(splitDate[0]),Integer.parseInt(splitDate[1]),Integer.parseInt(splitDate[2]),Integer.parseInt(splitTime[0]),Integer.parseInt(splitTime[1]));
+            meetingTime = LocalDateTime.of(Integer.parseInt(splitDate[0]), Integer.parseInt(splitDate[1]), Integer.parseInt(splitDate[2]), Integer.parseInt(splitTime[0]), Integer.parseInt(splitTime[1]));
         }
         return meetingTime;
     }
 
-    private void send(Message message, String responseMessage){
+    private void send(Message message, String responseMessage) {
         String chatId = String.valueOf(message.getChatId());
         SendMessage response = new SendMessage(chatId, responseMessage);
         messageSender.sendResponse(response);
     }
-
 
 
 }

@@ -7,26 +7,32 @@ import com.roman.dao.repository.MeetingRepository;
 import com.roman.service.dto.meeting.CreateMeetingDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class MeetingService {
 
     private final RedisRepository redisRepository;
     private final MeetingRepository meetingRepository;
     private final WorkerService workerService;
 
+    @Transactional
     public CreateMeetingDto createMeeting(String directorId){
         String fullMeetingInfo = redisRepository.getFullMeetingInfo(directorId);
         CreateMeetingDto meetingDto = parseToDto(fullMeetingInfo);
-        List<Worker> allWorkers = workerService.findAllWorkers(meetingDto.getWorkersId());
+        List<Worker> allWorkers = workerService.findAllWorkersWithMeetings(meetingDto.getWorkersId());
         LocalDateTime meetingTime = parseToLocalDateTime(meetingDto.getTime());
-        meetingRepository.save(new Meeting(meetingDto.getTitle(),meetingTime, allWorkers));
+        Meeting meetingBeforeCreate = new Meeting(meetingDto.getTitle(), meetingTime, allWorkers);
+
+        allWorkers.forEach(worker -> worker.getMeetings().add(meetingBeforeCreate));
+
+        meetingRepository.save(meetingBeforeCreate);
         return meetingDto;
     }
 

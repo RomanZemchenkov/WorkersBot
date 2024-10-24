@@ -25,8 +25,8 @@ public interface WorkerRepository extends JpaRepository<Worker,Long> {
     List<Worker> findAllWorkersByCompanyId(Long companyId);
 
     @Transactional(readOnly = true)
-    @Query(value = "SELECT w FROM worker w WHERE w.id IN :ids")
-    List<Worker> findAllWorkerById(List<Long> ids);
+    @Query(value = "SELECT w FROM worker w LEFT JOIN FETCH w.meetings WHERE w.id IN :ids")
+    List<Worker> findAllWorkerWithMeetingById(List<Long> ids);
 
     @EntityGraph(type = EntityGraph.EntityGraphType.LOAD, value = "Worker.withAll")
     Optional<Worker> findAllById(Long id);

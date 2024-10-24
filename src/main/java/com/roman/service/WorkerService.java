@@ -47,8 +47,8 @@ public class WorkerService {
     }
 
     @Transactional(readOnly = true)
-    public List<Worker> findAllWorkers(String[] workersId){
-        return workerRepository.findAllWorkerById(Arrays.stream(workersId).map(Long::parseLong).toList());
+    public List<Worker> findAllWorkersWithMeetings(String[] workersId){
+        return workerRepository.findAllWorkerWithMeetingById(Arrays.stream(workersId).map(Long::parseLong).toList());
     }
 
     @Transactional(readOnly = true)

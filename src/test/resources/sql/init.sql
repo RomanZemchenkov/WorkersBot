@@ -1,5 +1,7 @@
 DROP TABLE IF EXISTS personal_info CASCADE ;
 DROP TABLE IF EXISTS state CASCADE ;
+DROP TABLE IF EXISTS worker_meeting CASCADE ;
+DROP TABLE IF EXISTS meeting CASCADE ;
 DROP TABLE IF EXISTS worker CASCADE ;
 DROP TABLE IF EXISTS post CASCADE ;
 DROP TABLE IF EXISTS company CASCADE ;
@@ -41,4 +43,18 @@ CREATE TABLE personal_info
     post_id BIGINT REFERENCES post(id),
     chat_id BIGINT UNIQUE
 
+);
+
+CREATE TABLE meeting
+(
+    id BIGSERIAL PRIMARY KEY,
+    title VARCHAR(128) NOT NULL,
+    time TIMESTAMP NOT NULL
+);
+
+CREATE TABLE worker_meeting
+(
+    worker_id BIGINT REFERENCES worker(id),
+    meeting_id BIGINT REFERENCES meeting(id),
+    PRIMARY KEY (worker_id,meeting_id)
 );

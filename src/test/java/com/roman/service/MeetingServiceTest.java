@@ -25,9 +25,8 @@ public class MeetingServiceTest extends RedisInitializer {
     }
 
     @Test
-    @Transactional
     void test(){
-        redisRepository.saveMeetingPart(DIRECTOR_ID,MEETING_PART[0],"2");
+        redisRepository.saveMeetingPart(DIRECTOR_ID,MEETING_PART[0],"1,2");
         redisRepository.saveMeetingPart(DIRECTOR_ID,MEETING_PART[1],"2024-10-24");
         redisRepository.saveMeetingPart(DIRECTOR_ID,MEETING_PART[2],"13:30");
         redisRepository.saveMeetingPart(DIRECTOR_ID,MEETING_PART[3],"title");
