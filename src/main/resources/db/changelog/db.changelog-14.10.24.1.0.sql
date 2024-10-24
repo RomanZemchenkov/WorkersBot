@@ -45,8 +45,7 @@ CREATE TABLE personal_info
 --changeset roman:6
 CREATE TABLE personal_token
 (
-    id BIGSERIAL PRIMARY KEY,
-    worker_id BIGINT REFERENCES worker(id),
+    worker_id BIGINT PRIMARY KEY REFERENCES worker(id),
     token VARCHAR(32) NOT NULL  UNIQUE,
     password VARCHAR(32) NOT NULL CHECK ( length(password) >= 8)
 );
