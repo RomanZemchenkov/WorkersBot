@@ -3,9 +3,9 @@ package com.roman.service.telegram.options;
 import com.roman.dao.redis.RedisRepository;
 import com.roman.service.MeetingService;
 import com.roman.service.PersonalInfoService;
+import com.roman.service.WorkerService;
 import com.roman.service.dto.meeting.CreateMeetingDto;
 import com.roman.service.stage.OptionsState;
-import com.roman.service.telegram.DockerInitializer;
 import com.roman.service.telegram.TelegramMessageSender;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -26,13 +26,14 @@ import org.telegram.telegrambots.meta.bots.AbsSender;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootTest
 @Sql(value = {"classpath:sql/init.sql", "classpath:sql/load.sql"})
-public class OptionServiceIT extends DockerInitializer {
+public class OptionServiceIT{
 
     private final OptionsService optionsService;
 
@@ -48,6 +49,8 @@ public class OptionServiceIT extends DockerInitializer {
     private MeetingService meetingService;
     @MockBean
     private PersonalInfoService personalInfoService;
+    @MockBean
+    private WorkerService workerService;
 
     @Captor
     private ArgumentCaptor<SendMessage> sendMessageArgumentCaptor;
@@ -200,6 +203,8 @@ public class OptionServiceIT extends DockerInitializer {
         //step two
         Mockito.reset(messageSender);
         Mockito.doNothing().when(messageSender).sendResponse(Mockito.any(SendMessage.class));
+        Mockito.doNothing().when(redisRepository).saveMeetingPart(Mockito.anyLong(),Mockito.anyString(),Mockito.anyString());
+        Mockito.when(workerService.findAllWorkersWithAllInformation(Mockito.any(Long.class))).thenReturn(List.of());
 
         Message addMeetingMessage = messageFactory("/addMeeting");
         optionsService.checkOptionsState(addMeetingMessage, OptionsState.CHOOSE_MEETING_OPERATION);
@@ -231,6 +236,8 @@ public class OptionServiceIT extends DockerInitializer {
         //step two
         Mockito.reset(messageSender);
         Mockito.doNothing().when(messageSender).sendResponse(Mockito.any(SendMessage.class));
+        Mockito.doNothing().when(redisRepository).saveMeetingPart(Mockito.anyLong(),Mockito.anyString(),Mockito.anyString());
+        Mockito.when(workerService.findAllWorkersWithAllInformation(Mockito.any(Long.class))).thenReturn(List.of());
 
         Message addMeetingMessage = messageFactory("/addMeeting");
         optionsService.checkOptionsState(addMeetingMessage, OptionsState.CHOOSE_MEETING_OPERATION);
@@ -242,8 +249,9 @@ public class OptionServiceIT extends DockerInitializer {
         Mockito.reset(messageSender);
         Mockito.doNothing().when(messageSender).sendResponse(Mockito.any(SendMessage.class));
         Mockito.doNothing().when(redisRepository).saveMeetingPart(Mockito.any(Long.class),Mockito.any(String.class),Mockito.any(String.class));
+        Mockito.when(redisRepository.getSavedWorkersNumber(Mockito.anyLong())).thenReturn(Map.of("1","1","2","11","3","21","4","32"));
 
-        String participants = "1, 11, 21, 32";
+        String participants = "1, 2, 3, 4";
         Message partisipantsMessage = messageFactory(participants);
 
         optionsService.checkOptionsState(partisipantsMessage,OptionsState.CREATE_MEETING);
@@ -382,10 +390,10 @@ public class OptionServiceIT extends DockerInitializer {
         Mockito.reset(messageSender, redisRepository);
         Mockito.doNothing().when(messageSender).sendResponse(Mockito.any(SendMessage.class));
         Mockito.doNothing().when(redisRepository).saveMeetingPart(Mockito.any(Long.class),Mockito.any(String.class),Mockito.any(String.class));
-        Mockito.when(personalInfoService.findWorkersChat(Mockito.any())).thenReturn(List.of(1L,11L,21L,32L));
+        Mockito.when(personalInfoService.findWorkersChat(Mockito.any())).thenReturn(List.of(1244L,55L,133L,32L));
         String date = LocalDate.now().toString() + " " + meetingTime;
         String meetingTitle = "Some meeting";
-        Mockito.when(meetingService.createMeeting(Mockito.any(Long.class))).thenReturn(new CreateMeetingDto(new String[]{"1","11","21","32"},date,meetingTitle));
+        Mockito.when(meetingService.createMeeting(Mockito.any(Long.class))).thenReturn(new CreateMeetingDto(new String[]{"170","53","22","994"},date,meetingTitle));
 
         Message titleMessage = messageFactory(meetingTitle);
         ArgumentCaptor<String> titleCapture = ArgumentCaptor.forClass(String.class);

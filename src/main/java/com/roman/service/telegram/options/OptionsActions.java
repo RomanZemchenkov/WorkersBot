@@ -1,6 +1,5 @@
 package com.roman.service.telegram.options;
 
-import com.roman.GlobalVariables;
 import com.roman.dao.redis.RedisRepository;
 import com.roman.service.MeetingService;
 import com.roman.service.PersonalInfoService;
@@ -27,7 +26,9 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import static com.roman.GlobalVariables.MEETING_PART;
 
@@ -180,20 +181,31 @@ public class OptionsActions {
             */
             Long directorId = message.getFrom().getId();
             String participantsList = message.getText();
-            StringBuilder sb = new StringBuilder();
+            StringBuilder workersPositionBuilder = new StringBuilder();
             boolean prevDig = false;
             int messageLength = participantsList.length();
             for(int i = 0; i < messageLength; i++){
                 char currentChar = participantsList.charAt(i);
                 if(Character.isDigit(currentChar)){
-                    sb.append(currentChar);
+                    workersPositionBuilder.append(currentChar);
                     prevDig = true;
                 } else if (!Character.isDigit(currentChar) && prevDig && i != messageLength - 1){
-                    sb.append(",");
+                    workersPositionBuilder.append(",");
                     prevDig = false;
                 }
             }
-            redisRepository.saveMeetingPart(directorId, MEETING_PART[0], sb.toString());
+            String[] workersPositionsByArray = workersPositionBuilder.toString().split(",");
+            StringBuilder workersIdBuilder = new StringBuilder();
+            Map<String, String> workersPositionsAndId = redisRepository.getSavedWorkersNumber(directorId);
+            for(String position : workersPositionsByArray){
+                if(!workersIdBuilder.isEmpty()){
+                    workersIdBuilder.append(",");
+                }
+                String workerId = workersPositionsAndId.get(position);
+                workersIdBuilder.append(workerId);
+            }
+
+            redisRepository.saveMeetingPart(directorId, MEETING_PART[0], workersIdBuilder.toString());
             send(message, "Введите, пожалуйста, время встречи в одном из двух форматов:\n" +
                           "1. yyyy-MM-dd HH:mm Пример: 2024-10-10 13:30 - встреча будет назначена на определённую дату\n" +
                           "2. HH:mm Пример: 13:30 - встреча будет назначена на сегодня\n");
@@ -287,16 +299,11 @@ public class OptionsActions {
         int positionCounter = 1;
         for(ShowWorkerDto worker : workers){
             redisRepository.saveWorkerNumber(directorId,positionCounter, worker.getId());
-            sb.append(positionCounter);
-            sb.append(". ");
-            sb.append(worker.getFirstname());
-            sb.append(" ");
-            sb.append(worker.getLastname());
-            sb.append(" ");
-            sb.append(worker.getUsername());
-            sb.append(" ");
-            sb.append(worker.getPost());
-            sb.append("\n");
+            sb.append(positionCounter).append(". ");
+            sb.append(worker.getFirstname()).append(" ");
+            sb.append(worker.getLastname()).append(" ");
+            sb.append(worker.getUsername()).append(" ");
+            sb.append(worker.getPost()).append("\n");
         }
         return sb.toString();
     }
