@@ -1,35 +1,28 @@
 package com.roman.service.telegram.options;
 
-import com.roman.service.stage.OptionEvent;
+import com.roman.dao.redis.RedisRepository;
+import com.roman.service.MeetingService;
 import com.roman.service.stage.OptionsState;
 import com.roman.service.telegram.DockerInitializer;
-import com.roman.service.telegram.TelegramBot;
 import com.roman.service.telegram.TelegramMessageSender;
-import jakarta.persistence.EntityManager;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.statemachine.StateMachine;
-import org.springframework.statemachine.state.ObjectState;
-import org.springframework.statemachine.state.State;
-import org.springframework.statemachine.support.AbstractStateMachine;
 import org.springframework.test.context.jdbc.Sql;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Chat;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.bots.AbsSender;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -47,6 +40,10 @@ public class OptionServiceIT extends DockerInitializer {
     private TelegramMessageSender messageSender;
     @SpyBean
     private OptionsActions optionsActions;
+    @MockBean
+    private RedisRepository redisRepository;
+    @MockBean
+    private MeetingService meetingService;
 
     @Captor
     private ArgumentCaptor<SendMessage> sendMessageArgumentCaptor;
@@ -234,20 +231,27 @@ public class OptionServiceIT extends DockerInitializer {
         Message addMeetingMessage = messageFactory("/addMeeting");
         optionsService.checkOptionsState(addMeetingMessage, OptionsState.CHOOSE_MEETING_OPERATION);
 
-        Mockito.verify(messageSender, Mockito.times(1)).sendResponse(Mockito.any(SendMessage.class));
+        Mockito.verify(messageSender, Mockito.times(2)).sendResponse(Mockito.any(SendMessage.class));
         Mockito.verify(optionsActions, Mockito.times(1)).callingCreateMeetingAction();
 
         //step three
         Mockito.reset(messageSender);
         Mockito.doNothing().when(messageSender).sendResponse(Mockito.any(SendMessage.class));
+        Mockito.doNothing().when(redisRepository).saveMeetingPart(Mockito.any(Long.class),Mockito.any(String.class),Mockito.any(String.class));
 
-        Message partisipantsMessage = messageFactory("1, 11, 21, 32");
+        String participants = "1, 11, 21, 32";
+        Message partisipantsMessage = messageFactory(participants);
 
         optionsService.checkOptionsState(partisipantsMessage,OptionsState.CREATE_MEETING);
+        ArgumentCaptor<String> participantsCapture = ArgumentCaptor.forClass(String.class);
         Mockito.verify(messageSender, Mockito.times(1)).sendResponse(sendMessageArgumentCaptor.capture());
+        Mockito.verify(redisRepository, Mockito.times(1)).saveMeetingPart(Mockito.any(Long.class),Mockito.any(String.class),participantsCapture.capture());
         Mockito.verify(optionsActions, Mockito.times(1)).callingCreateMeetingAction();
 
         SendMessage responseMessage = sendMessageArgumentCaptor.getValue();
+        String participantsInRedis = participantsCapture.getValue();
+        assertNotNull(participantsInRedis);
+        assertEquals(participantsInRedis,"1,11,21,32");
 
         assertNotNull(responseMessage);
         String text = responseMessage.getText();
@@ -277,30 +281,41 @@ public class OptionServiceIT extends DockerInitializer {
         Message addMeetingMessage = messageFactory("/addMeeting");
         optionsService.checkOptionsState(addMeetingMessage, OptionsState.CHOOSE_MEETING_OPERATION);
 
-        Mockito.verify(messageSender, Mockito.times(1)).sendResponse(Mockito.any(SendMessage.class));
+        Mockito.verify(messageSender, Mockito.times(2)).sendResponse(Mockito.any(SendMessage.class));
         Mockito.verify(optionsActions, Mockito.times(1)).callingCreateMeetingAction();
 
         //step three
         Mockito.reset(messageSender);
         Mockito.doNothing().when(messageSender).sendResponse(Mockito.any(SendMessage.class));
+        Mockito.doNothing().when(redisRepository).saveMeetingPart(Mockito.any(Long.class),Mockito.any(String.class),Mockito.any(String.class));
 
         Message partisipantsMessage = messageFactory("1, 11, 21, 32");
 
         optionsService.checkOptionsState(partisipantsMessage,OptionsState.CREATE_MEETING);
         Mockito.verify(messageSender, Mockito.times(1)).sendResponse(Mockito.any(SendMessage.class));
+        Mockito.verify(redisRepository, Mockito.times(1)).saveMeetingPart(Mockito.any(Long.class),Mockito.any(String.class),Mockito.any(String.class));
         Mockito.verify(optionsActions, Mockito.times(1)).callingCreateMeetingAction();
 
         //step four
-        Mockito.reset(messageSender);
+        Mockito.reset(messageSender, redisRepository);
         Mockito.doNothing().when(messageSender).sendResponse(Mockito.any(SendMessage.class));
+        Mockito.doNothing().when(redisRepository).saveMeetingPart(Mockito.any(Long.class),Mockito.any(String.class),Mockito.any(String.class));
 
-        Message timeMessage = messageFactory("13:30");
+        String meetingTime = "13:30";
+        Message timeMessage = messageFactory(meetingTime);
+
+        ArgumentCaptor<String> timeCapture = ArgumentCaptor.forClass(String.class);
 
         optionsService.checkOptionsState(timeMessage,OptionsState.ADD_MEETING_PARTICIPANTS);
         Mockito.verify(messageSender, Mockito.times(1)).sendResponse(sendMessageArgumentCaptor.capture());
+        Mockito.verify(redisRepository, Mockito.times(2)).saveMeetingPart(Mockito.any(Long.class),Mockito.any(String.class),timeCapture.capture());
         Mockito.verify(optionsActions, Mockito.times(1)).callingCreateMeetingAction();
 
         SendMessage responseMessage = sendMessageArgumentCaptor.getValue();
+        List<String> timeInRedis = timeCapture.getAllValues();
+        assertEquals(timeInRedis.size(),2);
+        assertEquals(timeInRedis.get(0), LocalDate.now().toString());
+        assertEquals(timeInRedis.get(1), meetingTime);
 
         assertNotNull(responseMessage);
         String text = responseMessage.getText();
@@ -328,40 +343,53 @@ public class OptionServiceIT extends DockerInitializer {
         Message addMeetingMessage = messageFactory("/addMeeting");
         optionsService.checkOptionsState(addMeetingMessage, OptionsState.CHOOSE_MEETING_OPERATION);
 
-        Mockito.verify(messageSender, Mockito.times(1)).sendResponse(Mockito.any(SendMessage.class));
+        Mockito.verify(messageSender, Mockito.times(2)).sendResponse(Mockito.any(SendMessage.class));
         Mockito.verify(optionsActions, Mockito.times(1)).callingCreateMeetingAction();
 
         //step three
         Mockito.reset(messageSender);
         Mockito.doNothing().when(messageSender).sendResponse(Mockito.any(SendMessage.class));
+        Mockito.doNothing().when(redisRepository).saveMeetingPart(Mockito.any(Long.class),Mockito.any(String.class),Mockito.any(String.class));
 
         Message partisipantsMessage = messageFactory("1, 11, 21, 32");
 
         optionsService.checkOptionsState(partisipantsMessage,OptionsState.CREATE_MEETING);
         Mockito.verify(messageSender, Mockito.times(1)).sendResponse(Mockito.any(SendMessage.class));
+        Mockito.verify(redisRepository, Mockito.times(1)).saveMeetingPart(Mockito.any(Long.class),Mockito.any(String.class),Mockito.any(String.class));
         Mockito.verify(optionsActions, Mockito.times(1)).callingCreateMeetingAction();
 
         //step four
-        Mockito.reset(messageSender);
+        Mockito.reset(messageSender, redisRepository);
         Mockito.doNothing().when(messageSender).sendResponse(Mockito.any(SendMessage.class));
+        Mockito.doNothing().when(redisRepository).saveMeetingPart(Mockito.any(Long.class),Mockito.any(String.class),Mockito.any(String.class));
 
         Message timeMessage = messageFactory("13:30");
 
         optionsService.checkOptionsState(timeMessage,OptionsState.ADD_MEETING_PARTICIPANTS);
         Mockito.verify(messageSender, Mockito.times(1)).sendResponse(Mockito.any(SendMessage.class));
+        Mockito.verify(redisRepository, Mockito.times(2)).saveMeetingPart(Mockito.any(Long.class),Mockito.any(String.class),Mockito.any(String.class));
         Mockito.verify(optionsActions, Mockito.times(1)).callingCreateMeetingAction();
 
         //step five
-        Mockito.reset(messageSender);
+        Mockito.reset(messageSender, redisRepository);
         Mockito.doNothing().when(messageSender).sendResponse(Mockito.any(SendMessage.class));
+        Mockito.doNothing().when(redisRepository).saveMeetingPart(Mockito.any(Long.class),Mockito.any(String.class),Mockito.any(String.class));
+        Mockito.when(meetingService.createMeeting(Mockito.any(Long.class))).thenReturn(null);
 
-        Message titleMessage = messageFactory("Some meeting");
+        String meetingTitle = "Some meeting";
+        Message titleMessage = messageFactory(meetingTitle);
+        ArgumentCaptor<String> titleCapture = ArgumentCaptor.forClass(String.class);
 
-        optionsService.checkOptionsState(timeMessage,OptionsState.ADD_MEETING_TIME);
+        optionsService.checkOptionsState(titleMessage,OptionsState.ADD_MEETING_TIME);
         Mockito.verify(messageSender, Mockito.times(1)).sendResponse(sendMessageArgumentCaptor.capture());
+        Mockito.verify(meetingService, Mockito.times(1)).createMeeting(Mockito.any(Long.class));
+        Mockito.verify(redisRepository, Mockito.times(1)).saveMeetingPart(Mockito.any(Long.class),Mockito.any(String.class),titleCapture.capture());
         Mockito.verify(optionsActions, Mockito.times(1)).callingCreateMeetingAction();
 
         SendMessage responseMessage = sendMessageArgumentCaptor.getValue();
+        String titleInRedis = titleCapture.getValue();
+        assertNotNull(titleInRedis);
+        assertEquals(titleInRedis,meetingTitle);
 
         assertNotNull(responseMessage);
         String text = responseMessage.getText();

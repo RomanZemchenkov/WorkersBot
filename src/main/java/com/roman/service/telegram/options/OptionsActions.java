@@ -1,6 +1,8 @@
 package com.roman.service.telegram.options;
 
+import com.roman.GlobalVariables;
 import com.roman.dao.redis.RedisRepository;
+import com.roman.service.MeetingService;
 import com.roman.service.PersonalInfoService;
 import com.roman.service.WorkerService;
 import com.roman.service.dto.worker.ShowFullInfoWorkerDto;
@@ -26,11 +28,14 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 
+import static com.roman.GlobalVariables.MEETING_PART;
+
 @Component
 public class OptionsActions {
 
     private final TelegramMessageSender messageSender;
     private final RedisRepository redisRepository;
+    private final MeetingService meetingService;
     private final WorkerService workerService;
     private final PersonalInfoService personalInfoService;
     private static final String OPTIONS_ACTION_KEY = "message";
@@ -39,10 +44,12 @@ public class OptionsActions {
     @Autowired
     public OptionsActions(@Lazy TelegramMessageSender messageSender,
                           RedisRepository redisRepository,
+                          MeetingService meetingService,
                           WorkerService workerService,
                           PersonalInfoService personalInfoService) {
         this.messageSender = messageSender;
         this.redisRepository = redisRepository;
+        this.meetingService = meetingService;
         this.workerService = workerService;
         this.personalInfoService = personalInfoService;
     }
@@ -167,7 +174,25 @@ public class OptionsActions {
     public Action<OptionsState, OptionEvent> settingMeetingParticipantsAction() {
         return context -> {
             Message message = (Message) context.getMessageHeader(OPTIONS_ACTION_KEY);
+            /*
+              тут мы начинаем формировать запись о встрече в редисе, получая список сотрудников и помещая их в память
+            */
+            Long directorId = message.getFrom().getId();
             String participantsList = message.getText();
+            StringBuilder sb = new StringBuilder();
+            boolean prevDig = false;
+            int messageLength = participantsList.length();
+            for(int i = 0; i < messageLength; i++){
+                char currentChar = participantsList.charAt(i);
+                if(Character.isDigit(currentChar)){
+                    sb.append(currentChar);
+                    prevDig = true;
+                } else if (!Character.isDigit(currentChar) && prevDig && i != messageLength - 1){
+                    sb.append(",");
+                    prevDig = false;
+                }
+            }
+            redisRepository.saveMeetingPart(directorId, MEETING_PART[0], sb.toString());
             send(message, "Введите, пожалуйста, время встречи в одном из двух форматов:\n" +
                           "1. yyyy-MM-dd HH:mm Пример: 2024-10-10 13:30 - встреча будет назначена на определённую дату\n" +
                           "2. HH:mm Пример: 13:30 - встреча будет назначена на сегодня\n");
@@ -179,6 +204,22 @@ public class OptionsActions {
         return context -> {
             Message message = (Message) context.getMessageHeader(OPTIONS_ACTION_KEY);
             String time = message.getText();
+            Long directorId = message.getFrom().getId();
+            /*
+            Тут мы будем записывать в редис время, на которое будет назначена встреча
+             */
+            String[] timeByArray = time.split(" ");
+            String meetingTime;
+            String meetingDate;
+            if(timeByArray.length == 1){
+                meetingTime = timeByArray[0];
+                meetingDate = LocalDate.now().toString();
+            } else {
+                meetingTime = timeByArray[0];
+                meetingDate = timeByArray[1];
+            }
+            redisRepository.saveMeetingPart(directorId,MEETING_PART[1],meetingDate);
+            redisRepository.saveMeetingPart(directorId,MEETING_PART[2],meetingTime);
             send(message, "Введите, пожалуйста, название или тему встречи.");
         };
     }
@@ -186,7 +227,17 @@ public class OptionsActions {
     public Action<OptionsState, OptionEvent> settingMeetingTitleAction() {
         return context -> {
             Message message = (Message) context.getMessageHeader(OPTIONS_ACTION_KEY);
+            Long directorId = message.getFrom().getId();
+            /*
+            Тут мы будем записывать в редис название встречи
+            Переходить в класс meetingService и:
+            Создавать встречу и записывать её в бд
+            Удалять встречу из редиса
+            Рассылать сотрудникам приглашения
+             */
             String title = message.getText();
+            redisRepository.saveMeetingPart(directorId,MEETING_PART[3],title);
+            meetingService.createMeeting(directorId);
             send(message, "Встреча создана, приглашения отправлены.");
         };
     }
@@ -212,11 +263,10 @@ public class OptionsActions {
     }
 
     private String createShowWorkersList(List<ShowWorkerDto> workers, long directorId){
-        String director = String.valueOf(directorId);
         StringBuilder sb = new StringBuilder();
         int positionCounter = 1;
         for(ShowWorkerDto worker : workers){
-            redisRepository.saveWorkerNumber(director,positionCounter, worker.getId());
+            redisRepository.saveWorkerNumber(directorId,positionCounter, worker.getId());
             sb.append(positionCounter);
             sb.append(". ");
             sb.append(worker.getFirstname());

@@ -2,10 +2,7 @@ package com.roman.dao.redis;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.HashOperations;
-import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ScanOptions;
-import org.springframework.data.redis.core.SetOperations;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
@@ -13,27 +10,28 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import static com.roman.GlobalVariables.MEETING_PART;
+
 @Component
 public class RedisRepository {
 
     private final RedisTemplate<String, String> redisTemplate;
-    private static final String[] MEETING_PART= {"participants","date","time","name"};
-    private static final String TABLE_MEETING_KEY = "%s::meeting";
-    private static final String TABLE_WORKER_NUMBER_KEY = "%s::numbers";
+    private static final String TABLE_MEETING_KEY = "%d::meeting";
+    private static final String TABLE_WORKER_NUMBER_KEY = "%d::numbers";
 
 
     public RedisRepository(@Qualifier(value = "redisTemplate") RedisTemplate<String, String> redisTemplate) {
         this.redisTemplate = redisTemplate;
     }
 
-    public void saveMeetingPart(String directorId,String partName, String part){
+    public void saveMeetingPart(Long directorId,String partName, String part){
         String tableKey = TABLE_MEETING_KEY.formatted(directorId);
         HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
         hashOperations.put(tableKey,partName,part);
         redisTemplate.expire(tableKey, Duration.ofMinutes(10L));
     }
 
-    public String getFullMeetingInfo(String directorId){
+    public String getFullMeetingInfo(Long directorId){
         String tableKey = TABLE_MEETING_KEY.formatted(directorId);
         HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
 
@@ -47,7 +45,7 @@ public class RedisRepository {
         return sb.toString();
     }
 
-    public void saveWorkerNumber(String directorId, int workerNumber, String workerId){
+    public void saveWorkerNumber(Long directorId, int workerNumber, String workerId){
         String tableKey = TABLE_WORKER_NUMBER_KEY.formatted(directorId);
 
         HashOperations<String, Object, Object> hash = redisTemplate.opsForHash();
@@ -56,7 +54,7 @@ public class RedisRepository {
 
     }
 
-    public Map<String,String> getSavedWorkersNumber(String directorId){
+    public Map<String,String> getSavedWorkersNumber(Long directorId){
         String tableKey = TABLE_WORKER_NUMBER_KEY.formatted(directorId);
 
         HashOperations<String, Object, Object> hash = redisTemplate.opsForHash();

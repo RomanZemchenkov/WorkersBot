@@ -8,12 +8,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.Map;
 
+import static com.roman.GlobalVariables.MEETING_PART;
+
 @SpringBootTest
 public class RedisRepositoryTest extends RedisInitializer {
 
     private final RedisRepository redisRepository;
-    private static final String DIRECTOR_ID = "1";
-    private static final String[] MEETING_PART= {"participants","date","time","name"};
+    private static final Long DIRECTOR_ID = 1L;
 
     @Autowired
     public RedisRepositoryTest(RedisRepository redisRepository) {

@@ -23,7 +23,7 @@ public class MeetingService {
     private final WorkerService workerService;
 
     @Transactional
-    public CreateMeetingDto createMeeting(String directorId){
+    public CreateMeetingDto createMeeting(Long directorId){
         String fullMeetingInfo = redisRepository.getFullMeetingInfo(directorId);
         CreateMeetingDto meetingDto = parseToDto(fullMeetingInfo);
         List<Worker> allWorkers = workerService.findAllWorkersWithMeetings(meetingDto.getWorkersId());
