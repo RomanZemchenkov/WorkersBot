@@ -17,10 +17,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly = true)
 public class PersonalInfoService {
 
     private final PersonalInfoMapper mapper;
@@ -36,12 +37,17 @@ public class PersonalInfoService {
         personalInfoRepository.save(personalInfo);
     }
 
-    @Transactional(readOnly = true)
     public ShowFullInfoWorkerDto findFullInfo(String username){
         PersonalInfo workerInfo = personalInfoRepository.findPersonalInfoByUsername(username).get();
         return mapper.mapToShow(workerInfo);
     }
 
+
+    public List<Long> findWorkersChat(String[] workersId) {
+        return personalInfoRepository.findPersonalChatId(workersId);
+    }
+
+    @Transactional
     public void updatePersonalInfoPost(Long workerId, String post) {
         PersonalInfo personalInfo = personalInfoRepository.findById(workerId).get();
         Post existPost = postService.findPostOrCreate(post);
@@ -50,6 +56,7 @@ public class PersonalInfoService {
         personalInfoRepository.save(personalInfo);
     }
 
+    @Transactional
     public void updatePersonalInfoBirthday(Long workerId, String birthday) {
         PersonalInfo personalInfo = personalInfoRepository.findById(workerId).get();
         try {
@@ -61,4 +68,5 @@ public class PersonalInfoService {
         personalInfoRepository.save(personalInfo);
 
     }
+
 }

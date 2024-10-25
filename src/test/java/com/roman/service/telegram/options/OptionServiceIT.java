@@ -2,6 +2,8 @@ package com.roman.service.telegram.options;
 
 import com.roman.dao.redis.RedisRepository;
 import com.roman.service.MeetingService;
+import com.roman.service.PersonalInfoService;
+import com.roman.service.dto.meeting.CreateMeetingDto;
 import com.roman.service.stage.OptionsState;
 import com.roman.service.telegram.DockerInitializer;
 import com.roman.service.telegram.TelegramMessageSender;
@@ -44,6 +46,8 @@ public class OptionServiceIT extends DockerInitializer {
     private RedisRepository redisRepository;
     @MockBean
     private MeetingService meetingService;
+    @MockBean
+    private PersonalInfoService personalInfoService;
 
     @Captor
     private ArgumentCaptor<SendMessage> sendMessageArgumentCaptor;
@@ -322,6 +326,9 @@ public class OptionServiceIT extends DockerInitializer {
         assertEquals(text,"Введите, пожалуйста, название или тему встречи.");
     }
 
+    /*
+    Надо подумать о том, как мокать StateMachine, чтобы не вызывать цепочку методов для изменения её состояния
+     */
     @Test
     @DisplayName("Testing the /addMeeting command with add title")
     void wantToAddTitleToMeetingCommandTest(){
@@ -363,7 +370,8 @@ public class OptionServiceIT extends DockerInitializer {
         Mockito.doNothing().when(messageSender).sendResponse(Mockito.any(SendMessage.class));
         Mockito.doNothing().when(redisRepository).saveMeetingPart(Mockito.any(Long.class),Mockito.any(String.class),Mockito.any(String.class));
 
-        Message timeMessage = messageFactory("13:30");
+        String meetingTime = "13:30";
+        Message timeMessage = messageFactory(meetingTime);
 
         optionsService.checkOptionsState(timeMessage,OptionsState.ADD_MEETING_PARTICIPANTS);
         Mockito.verify(messageSender, Mockito.times(1)).sendResponse(Mockito.any(SendMessage.class));
@@ -374,26 +382,29 @@ public class OptionServiceIT extends DockerInitializer {
         Mockito.reset(messageSender, redisRepository);
         Mockito.doNothing().when(messageSender).sendResponse(Mockito.any(SendMessage.class));
         Mockito.doNothing().when(redisRepository).saveMeetingPart(Mockito.any(Long.class),Mockito.any(String.class),Mockito.any(String.class));
-        Mockito.when(meetingService.createMeeting(Mockito.any(Long.class))).thenReturn(null);
-
+        Mockito.when(personalInfoService.findWorkersChat(Mockito.any())).thenReturn(List.of(1L,11L,21L,32L));
+        String date = LocalDate.now().toString() + " " + meetingTime;
         String meetingTitle = "Some meeting";
+        Mockito.when(meetingService.createMeeting(Mockito.any(Long.class))).thenReturn(new CreateMeetingDto(new String[]{"1","11","21","32"},date,meetingTitle));
+
         Message titleMessage = messageFactory(meetingTitle);
         ArgumentCaptor<String> titleCapture = ArgumentCaptor.forClass(String.class);
 
         optionsService.checkOptionsState(titleMessage,OptionsState.ADD_MEETING_TIME);
-        Mockito.verify(messageSender, Mockito.times(1)).sendResponse(sendMessageArgumentCaptor.capture());
+        Mockito.verify(messageSender, Mockito.times(5)).sendResponse(sendMessageArgumentCaptor.capture());
         Mockito.verify(meetingService, Mockito.times(1)).createMeeting(Mockito.any(Long.class));
         Mockito.verify(redisRepository, Mockito.times(1)).saveMeetingPart(Mockito.any(Long.class),Mockito.any(String.class),titleCapture.capture());
         Mockito.verify(optionsActions, Mockito.times(1)).callingCreateMeetingAction();
 
-        SendMessage responseMessage = sendMessageArgumentCaptor.getValue();
         String titleInRedis = titleCapture.getValue();
         assertNotNull(titleInRedis);
         assertEquals(titleInRedis,meetingTitle);
 
-        assertNotNull(responseMessage);
-        String text = responseMessage.getText();
-        assertEquals(text,"Встреча создана, приглашения отправлены.");
+        List<SendMessage> allValues = sendMessageArgumentCaptor.getAllValues();
+        assertNotNull(allValues);
+        assertEquals(allValues.size(),5);
+
+
     }
 
     static Message messageFactory(String requestText) {

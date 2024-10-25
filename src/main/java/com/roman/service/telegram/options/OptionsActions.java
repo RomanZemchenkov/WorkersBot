@@ -5,6 +5,7 @@ import com.roman.dao.redis.RedisRepository;
 import com.roman.service.MeetingService;
 import com.roman.service.PersonalInfoService;
 import com.roman.service.WorkerService;
+import com.roman.service.dto.meeting.CreateMeetingDto;
 import com.roman.service.dto.worker.ShowFullInfoWorkerDto;
 import com.roman.service.dto.worker.ShowWorkerDto;
 import com.roman.service.exception.MessageFormatException;
@@ -233,11 +234,16 @@ public class OptionsActions {
             Переходить в класс meetingService и:
             Создавать встречу и записывать её в бд
             Удалять встречу из редиса
-            Рассылать сотрудникам приглашения
+            Возращаемся обратно и:
+            Рассылаем сотрудникам приглашения
              */
             String title = message.getText();
             redisRepository.saveMeetingPart(directorId,MEETING_PART[3],title);
-            meetingService.createMeeting(directorId);
+            CreateMeetingDto meeting = meetingService.createMeeting(directorId);
+            String[] workersId = meeting.getWorkersId();
+            List<Long> workerChats = personalInfoService.findWorkersChat(workersId);
+            String inviteMeetingMessage = inviteToMeetingCreator(meeting);
+            workerChats.forEach(id -> send(id,inviteMeetingMessage));
             send(message, "Встреча создана, приглашения отправлены.");
         };
     }
@@ -256,10 +262,24 @@ public class OptionsActions {
         return meetingTime;
     }
 
+
+
     private void send(Message message, String responseMessage) {
-        String chatId = String.valueOf(message.getChatId());
-        SendMessage response = new SendMessage(chatId, responseMessage);
+        send(message.getChatId(), responseMessage);
+    }
+
+    private void send(Long chatId, String responseMessage){
+        String id = String.valueOf(chatId);
+        SendMessage response = new SendMessage(id, responseMessage);
         messageSender.sendResponse(response);
+    }
+
+    private String inviteToMeetingCreator(CreateMeetingDto createMeetingDto){
+        StringBuilder sb = new StringBuilder();
+        sb.append("Вы приглашены на встречу. Информация о встрече: \n");
+        sb.append("Название: " ).append(createMeetingDto.getTitle()).append("\n");
+        sb.append("Время: ").append(createMeetingDto.getTime());
+        return sb.toString();
     }
 
     private String createShowWorkersList(List<ShowWorkerDto> workers, long directorId){
