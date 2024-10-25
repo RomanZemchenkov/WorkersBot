@@ -1,9 +1,12 @@
 package com.roman.dao.redis;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+
+import java.util.Map;
 
 @SpringBootTest
 public class RedisRepositoryTest extends RedisInitializer {
@@ -26,6 +29,19 @@ public class RedisRepositoryTest extends RedisInitializer {
 
         String fullMeetingInfo = redisRepository.getFullMeetingInfo(DIRECTOR_ID);
         System.out.println(fullMeetingInfo);
+    }
+
+    @Test
+    @DisplayName("Testing the save and get numbers methods")
+    void saveAndGetNumbers(){
+        redisRepository.saveWorkerNumber(DIRECTOR_ID,1,"1");
+        redisRepository.saveWorkerNumber(DIRECTOR_ID,2,"2");
+        redisRepository.saveWorkerNumber(DIRECTOR_ID,3,"3");
+        redisRepository.saveWorkerNumber(DIRECTOR_ID,4,"4");
+        redisRepository.saveWorkerNumber(DIRECTOR_ID,5,"5");
+
+        Map<String, String> savedWorkersNumber = redisRepository.getSavedWorkersNumber(DIRECTOR_ID);
+        System.out.println(savedWorkersNumber);
     }
 
     @AfterEach

@@ -20,6 +20,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class WorkerService {
 
     private final WorkerRepository workerRepository;
@@ -37,8 +38,7 @@ public class WorkerService {
         workerRepository.save(worker);
     }
 
-    @Transactional(readOnly = true)
-    public List<ShowWorkerDto> findAllWorkers(Long directorId){
+    public List<ShowWorkerDto> findAllWorkersWithAllInformation(Long directorId){
         Worker currentWorker = workerRepository.findWorkerWithCompanyById(directorId).get();
         return workerRepository.findAllWorkersByCompanyId(currentWorker.getCompany().getId())
                 .stream()
@@ -46,12 +46,11 @@ public class WorkerService {
                 .toList();
     }
 
-    @Transactional(readOnly = true)
+
     public List<Worker> findAllWorkersWithMeetings(String[] workersId){
         return workerRepository.findAllWorkerWithMeetingById(Arrays.stream(workersId).map(Long::parseLong).toList());
     }
 
-    @Transactional(readOnly = true)
     public Optional<Worker> findAllWorkerInformation(Long workerId){
         return workerRepository.findAllById(workerId);
     }
@@ -67,7 +66,6 @@ public class WorkerService {
     }
 
 
-    @Transactional(readOnly = true)
     public Worker findWorkerWithCompany(String directorUsername) {
         Optional<Worker> mayBeWorker = workerRepository.findWorkerWithCompanyAndPersonaInfoByUsername(directorUsername);
         if (mayBeWorker.isEmpty()) {

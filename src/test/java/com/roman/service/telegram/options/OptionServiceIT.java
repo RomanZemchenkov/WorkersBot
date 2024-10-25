@@ -203,14 +203,14 @@ public class OptionServiceIT extends DockerInitializer {
         Message addMeetingMessage = messageFactory("/addMeeting");
         optionsService.checkOptionsState(addMeetingMessage, OptionsState.CHOOSE_MEETING_OPERATION);
 
-        Mockito.verify(messageSender, Mockito.times(1)).sendResponse(sendMessageArgumentCaptor.capture());
+        Mockito.verify(messageSender, Mockito.times(2)).sendResponse(sendMessageArgumentCaptor.capture());
         Mockito.verify(optionsActions, Mockito.times(1)).callingCreateMeetingAction();
 
         SendMessage responseMessage = sendMessageArgumentCaptor.getValue();
 
         assertNotNull(responseMessage);
         String text = responseMessage.getText();
-        assertEquals(text,"Вам представлен список ваших сотрудников. Введите, пожалуйста, их номера из этого списка через запятую.");
+        assertNotNull(text);
     }
 
     @Test

@@ -1,5 +1,6 @@
 package com.roman.service.telegram.options;
 
+import com.roman.dao.redis.RedisRepository;
 import com.roman.service.PersonalInfoService;
 import com.roman.service.WorkerService;
 import com.roman.service.dto.worker.ShowFullInfoWorkerDto;
@@ -29,6 +30,7 @@ import java.util.List;
 public class OptionsActions {
 
     private final TelegramMessageSender messageSender;
+    private final RedisRepository redisRepository;
     private final WorkerService workerService;
     private final PersonalInfoService personalInfoService;
     private static final String OPTIONS_ACTION_KEY = "message";
@@ -36,9 +38,11 @@ public class OptionsActions {
 
     @Autowired
     public OptionsActions(@Lazy TelegramMessageSender messageSender,
+                          RedisRepository redisRepository,
                           WorkerService workerService,
                           PersonalInfoService personalInfoService) {
         this.messageSender = messageSender;
+        this.redisRepository = redisRepository;
         this.workerService = workerService;
         this.personalInfoService = personalInfoService;
     }
@@ -49,7 +53,7 @@ public class OptionsActions {
             User currentUser = message.getFrom();
             Long directorId = currentUser.getId();
 
-            List<ShowWorkerDto> allWorkers = workerService.findAllWorkers(directorId);
+            List<ShowWorkerDto> allWorkers = workerService.findAllWorkersWithAllInformation(directorId);
             StringBuilder sb = new StringBuilder();
             allWorkers.forEach(worker -> sb.append(worker.toString()).append("\n"));
             send(message, sb.toString());
@@ -87,7 +91,7 @@ public class OptionsActions {
             //отправить сообщение директору со списком всех сотрудников и сообщением о том, что уведовление доставлено
             User currentUser = message.getFrom();
             Long directorId = currentUser.getId();
-            List<ShowWorkerDto> allWorkers = workerService.findAllWorkers(directorId);
+            List<ShowWorkerDto> allWorkers = workerService.findAllWorkersWithAllInformation(directorId);
             StringBuilder sb = new StringBuilder("Приглашение успешно доставлено.\n");
             allWorkers.forEach(worker -> sb.append(worker.toString()).append("\n"));
             send(message, sb.toString());
@@ -121,7 +125,7 @@ public class OptionsActions {
             //отправить сообщение директору со списком всех сотрудников и сообщением о том, что уведовление доставлено
             User currentUser = message.getFrom();
             Long directorId = currentUser.getId();
-            List<ShowWorkerDto> allWorkers = workerService.findAllWorkers(directorId);
+            List<ShowWorkerDto> allWorkers = workerService.findAllWorkersWithAllInformation(directorId);
             StringBuilder sb = new StringBuilder("Приглашение успешно доставлено.\n");
             allWorkers.forEach(worker -> sb.append(worker.toString()).append("\n"));
             send(message, sb.toString());
@@ -141,6 +145,12 @@ public class OptionsActions {
     public Action<OptionsState, OptionEvent> callingCreateMeetingAction() {
         return context -> {
             Message message = (Message) context.getMessageHeader(OPTIONS_ACTION_KEY);
+            Long directorId = message.getFrom().getId();
+            List<ShowWorkerDto> workersInformation = workerService.findAllWorkersWithAllInformation(directorId);
+
+            String workersInformationByText = createShowWorkersList(workersInformation, directorId);
+
+
             /*
             Нужно создать запись в редисе, которую мы дальше будем заполнять
             Ну и нужно будет вернуть список струдников с их номерами от 1 до n
@@ -149,6 +159,7 @@ public class OptionsActions {
             */
 
             send(message, "Вам представлен список ваших сотрудников. Введите, пожалуйста, их номера из этого списка через запятую.");
+            send(message, workersInformationByText);
         };
     }
 
@@ -198,6 +209,26 @@ public class OptionsActions {
         String chatId = String.valueOf(message.getChatId());
         SendMessage response = new SendMessage(chatId, responseMessage);
         messageSender.sendResponse(response);
+    }
+
+    private String createShowWorkersList(List<ShowWorkerDto> workers, long directorId){
+        String director = String.valueOf(directorId);
+        StringBuilder sb = new StringBuilder();
+        int positionCounter = 1;
+        for(ShowWorkerDto worker : workers){
+            redisRepository.saveWorkerNumber(director,positionCounter, worker.getId());
+            sb.append(positionCounter);
+            sb.append(". ");
+            sb.append(worker.getFirstname());
+            sb.append(" ");
+            sb.append(worker.getLastname());
+            sb.append(" ");
+            sb.append(worker.getUsername());
+            sb.append(" ");
+            sb.append(worker.getPost());
+            sb.append("\n");
+        }
+        return sb.toString();
     }
 
 

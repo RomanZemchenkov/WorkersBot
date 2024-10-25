@@ -24,7 +24,7 @@ public class WorkerServiceTest extends DockerInitializer {
     @Test
     @DisplayName("Testing the find all workers by director id")
     void findAllByDirectorId(){
-        List<ShowWorkerDto> allWorkers = workerService.findAllWorkers(1L);
+        List<ShowWorkerDto> allWorkers = workerService.findAllWorkersWithAllInformation(1L);
         System.out.println(allWorkers);
     }
 
