@@ -11,8 +11,11 @@ public enum OptionsState {
     CREATE_MEETING, //создает новую встречу
     ADD_MEETING_PARTICIPANTS,
     ADD_MEETING_TIME,
-    ADD_MEETING_TITLE,
+//    ADD_MEETING_TITLE,
     OBSERVED_MEETINGS, //смотрит список существующих встреч
+    OBSERVED_ONE_MEETING, //смотрит всю информацию об одной встрече
+    CHANGE_MEETING, // меняет информацию о встрече
+    CHANGE_PARTICIPANTS, // меняет информацию об участниках встречи
 
     WILL_CHANGE_WORKER_INFORMATION, //будет менять информацию о сотруднике
     EMPTY

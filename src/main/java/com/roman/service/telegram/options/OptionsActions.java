@@ -5,6 +5,7 @@ import com.roman.service.MeetingService;
 import com.roman.service.PersonalInfoService;
 import com.roman.service.WorkerService;
 import com.roman.service.dto.meeting.CreateMeetingDto;
+import com.roman.service.dto.meeting.ShowMeetingDto;
 import com.roman.service.dto.worker.ShowFullInfoWorkerDto;
 import com.roman.service.dto.worker.ShowWorkerDto;
 import com.roman.service.exception.MessageFormatException;
@@ -257,6 +258,24 @@ public class OptionsActions {
             String inviteMeetingMessage = inviteToMeetingCreator(meeting);
             workerChats.forEach(id -> send(id,inviteMeetingMessage));
             send(message, "Встреча создана, приглашения отправлены.");
+        };
+    }
+
+
+    /*
+    Look meetings block
+     */
+
+    public Action<OptionsState,OptionEvent> lookMeetingsAction(){
+        return context -> {
+            Message message = (Message) context.getMessageHeader(OPTIONS_ACTION_KEY);
+            Long userId = message.getFrom().getId();
+            List<ShowMeetingDto> meetings = meetingService.findMeetings(userId);
+            StringBuilder allMeetingInfoBuilder = new StringBuilder();
+            for(int i = 0; i <= meetings.size(); i++){
+                allMeetingInfoBuilder.append(i + 1).append(". ").append(meetings.get(i).toString()).append("\n");
+            }
+            send(message, allMeetingInfoBuilder.toString());
         };
     }
 

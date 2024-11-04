@@ -38,7 +38,7 @@ public class OptionsService {
                 String currentCommand = message.getText();
                 switch (currentCommand){
                     case "/addMeeting" -> sendEvent(message, OptionEvent.WANT_TO_CREATE_MEETING);
-                    case "/myMeetings" -> sendEvent(message, OptionEvent.WANT_TO_LOOK_MEETING);
+                    case "/myMeetings" -> sendEvent(message, OptionEvent.WANT_TO_LOOK_MEETINGS);
                 }
             }
             case CREATE_MEETING -> sendEvent(message,OptionEvent.WANT_TO_ADD_PARTICIPANTS);

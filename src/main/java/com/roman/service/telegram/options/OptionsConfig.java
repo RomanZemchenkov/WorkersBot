@@ -40,14 +40,16 @@ public class OptionsConfig extends StateMachineConfigurerAdapter<OptionsState, O
                 .initial(CHOOSE)
                 .end(EMPTY)
                 .states(new HashSet<>(Set.of(OBSERVED_WORKERS,
-                        OBSERVED_MEETINGS,
                         CHOOSE_WORKER_FOR_CALLING,
                         WILL_CHANGE_WORKER_INFORMATION,
                         CHOOSE_MEETING_OPERATION,
                         CREATE_MEETING,
                         ADD_MEETING_PARTICIPANTS,
                         ADD_MEETING_TIME,
-                        ADD_MEETING_TITLE,
+                        OBSERVED_MEETINGS,
+                        OBSERVED_ONE_MEETING,
+                        CHANGE_MEETING,
+                        CHANGE_PARTICIPANTS,
                         OBSERVED_WORKER)));
     }
 
@@ -104,10 +106,16 @@ public class OptionsConfig extends StateMachineConfigurerAdapter<OptionsState, O
                             .and()
                                 .withExternal()
                                 .source(ADD_MEETING_TIME)
-                                .target(ADD_MEETING_TITLE)
+                                .target(CHOOSE_MEETING_OPERATION)
                                 .event(OptionEvent.WANT_TO_ADD_TITLE)
                                 .action(actions.settingMeetingTitleAction())
-                                .and();
+                                .and()
+                    .withExternal()
+                    .source(CHOOSE_MEETING_OPERATION)
+                    .target(OBSERVED_MEETINGS)
+                    .event(OptionEvent.WANT_TO_LOOK_MEETINGS)
+                    .action(actions.lookMeetingsAction())
+                    .and();
 
     }
 }

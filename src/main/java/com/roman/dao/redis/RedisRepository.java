@@ -1,5 +1,6 @@
 package com.roman.dao.redis;
 
+import com.roman.service.dto.meeting.ShowMeetingDto;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -18,6 +19,7 @@ public class RedisRepository {
     private final RedisTemplate<String, String> redisTemplate;
     private static final String TABLE_MEETING_KEY = "%d::meeting";
     private static final String TABLE_WORKER_NUMBER_KEY = "%d::numbers";
+    private static final String TABLE_MEETINGS_POSITION_KEY = "%d::meetings";
 
 
     public RedisRepository(@Qualifier(value = "redisTemplate") RedisTemplate<String, String> redisTemplate) {
@@ -67,6 +69,12 @@ public class RedisRepository {
         }
         deleteKey(tableKey);
         return workersNumberMap;
+    }
+
+    public void saveMeetingsNumber(Long workerId, int meetingPosition, ShowMeetingDto showMeetingDto){
+        String tableKey = TABLE_MEETINGS_POSITION_KEY.formatted(workerId);
+
+        HashOperations<String, Object, Object> hash = redisTemplate.opsForHash();
     }
 
     public void deleteKey(String keyPattern){

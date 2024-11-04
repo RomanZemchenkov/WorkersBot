@@ -5,6 +5,8 @@ import com.roman.dao.entity.Worker;
 import com.roman.dao.redis.RedisRepository;
 import com.roman.dao.repository.MeetingRepository;
 import com.roman.service.dto.meeting.CreateMeetingDto;
+import com.roman.service.dto.meeting.ShowMeetingDto;
+import com.roman.service.mapper.MeetingMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +23,7 @@ public class MeetingService {
     private final RedisRepository redisRepository;
     private final MeetingRepository meetingRepository;
     private final WorkerService workerService;
+    private final MeetingMapper meetingMapper;
 
     @Transactional
     public CreateMeetingDto createMeeting(Long directorId){
@@ -36,6 +39,13 @@ public class MeetingService {
         return meetingDto;
     }
 
+    public List<ShowMeetingDto> findMeetings(Long userId) {
+        List<Meeting> allMeetings = meetingRepository.findAllByWorkerId(userId);
+        return allMeetings.stream()
+                .map(meetingMapper::mapToShow)
+                .toList();
+    }
+
     private CreateMeetingDto parseToDto(String fullInfo){
         String[] infoByPart = fullInfo.split(" ");
         String[] workersId = infoByPart[0].split(",");
@@ -45,4 +55,6 @@ public class MeetingService {
     private LocalDateTime parseToLocalDateTime(String time){
         return LocalDateTime.parse(time, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
     }
+
+
 }
